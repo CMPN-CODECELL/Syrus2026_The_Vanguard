@@ -1,0 +1,21 @@
+{
+    "name": "medvision-ai",
+    "version": "1.0.0",
+    "private": true,
+    "description": "MedVision AI - Clinical Time Machine for Gemini 3 Hackathon",
+    "scripts": {
+        "dev": "cd frontend && npm run dev",
+        "build": "cd frontend && npm run build",
+        "start": "cd frontend && npm start",
+        "install:all": "cd frontend && npm install && cd ../backend && python -m pip install -r requirements.txt",
+        "backend": "cd backend && python -m uvicorn app.main:app --reload --port 8001"
+    },
+    "keywords": [
+        "medical AI",
+        "healthcare",
+        "Gemini 3",
+        "hackathon"
+    ],
+    "author": "MedVision Team",
+    "license": "MIT"
+}
