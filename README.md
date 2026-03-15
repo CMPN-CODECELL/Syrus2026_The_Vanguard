@@ -73,11 +73,7 @@ MedVision AI is a comprehensive telemedicine platform that leverages Google's Ge
 
 ### One-Click Installation (Windows)
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/sarthakskd20/medvision-ai.git
-   cd medvision-ai
-   ```
+1. Clone the repository
 
 2. Set up environment variables:
 
