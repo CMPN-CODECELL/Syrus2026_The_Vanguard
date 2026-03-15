@@ -2,6 +2,7 @@
 **Problem Statement**: Open Innovation: MedVision AI Powered Realtime Smart Doctor-Patient Consultation Platform  
 ---
 **Video Link**: https://youtu.be/lYuEJYUUPak
+
 **PPT Link**: https://www.canva.com/design/DAHD7iIDzio/FytyCPd0Gh-oFvUv73lS-Q/edit?utm_content=DAHD7iIDzio&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 ---
 
