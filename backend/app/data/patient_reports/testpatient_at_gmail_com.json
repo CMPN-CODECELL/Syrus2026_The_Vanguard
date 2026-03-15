@@ -1,0 +1,214 @@
+{
+  "patient_id": "testpatient@gmail.com",
+  "reports": [
+    {
+      "report_id": "ee14049f-c21f-466c-b489-07746635b250",
+      "created_at": "2026-01-17T20:18:40.331767",
+      "filename": "Report-3a.pdf",
+      "interpretation": "# Your Lab Report Explained\n\nHello Mrs. Disha Khatri,\n\nLet's break down your lab results in a simple, friendly way. This report is a **Complete Blood Count (CBC)**, which gives us a snapshot of your overall blood health, including red blood cells, white blood cells, and platelets.\n\n## Red Blood Cells (RBCs)\nThese cells are responsible for carrying oxygen from your lungs to the rest of your body.\n\n*   **Total R.B.C. Count (4.88 X 10^6/\u00b5L) & Haemoglobin (13.1 gm/dl):** Both of these are **NORMAL**. This is great news, as it means you have a healthy number of red blood cells and enough hemoglobin to carry oxygen effectively.\n*   **PCV/HCT (36.5 %):** This measures the percentage of red blood cells in your blood and is also **NORMAL**.\n*   **MCV (Mean Corpuscular Volume) (73.6 fl):** This result is **LOW**. MCV tells us the average size of your red blood cells. Your result indicates your red blood cells are slightly smaller than average.\n*   **MCH (Mean Corpuscular Hemoglobin) (26.8 pg):** This measures the average amount of hemoglobin in each red blood cell and is **NORMAL**.\n*   **MCHC (Mean Corpuscular Hemoglobin Concentration) (35.9 g/dl):** This result is **SLIGHTLY ELEVATED**. It measures the concentration of hemoglobin inside your red blood cells. Sometimes, this can be slightly higher when red blood cells are smaller.\n*   **RDW (Red Cell Distribution Width) (14.0 %):** This measures how varied your red blood cell sizes are, and your result is **NORMAL**.\n*   **Morphology of R.B.C.s: Microcytosis (Mild):** This finding from looking at your blood under a microscope confirms that your red blood cells are mildly smaller than usual. This is consistent with your low MCV.\n\n**What this means for you:** While your overall red blood cell count and hemoglobin are normal, the finding of smaller red blood cells (microcytosis) is something to note. This can sometimes be related to iron levels, even if your hemoglobin is currently adequate.\n\n## White Blood Cells (WBCs)\nThese cells are your body's immune defenders, fighting off infections and diseases.\n\n*   **Total W.B.C. Count (7,700 per cumm):** Your total white blood cell count is **NORMAL**, suggesting a healthy immune system.\n*   **WBC Parameters (Neutrophils, Eosinophils, Basophils, Lymphocytes):** The percentages and absolute counts for most of these specific types of white blood cells are **NORMAL**. This indicates your body has a balanced defense system.\n*   **Monocytes (1.0 % & Absolute Monocytes 0.1 X 10\u00b3 / \u00b5L):** Both your percentage and absolute count for monocytes are **SLIGHTLY LOW**. Monocytes help fight chronic infections and clean up damaged cells.\n*   **Morphology of W.B.C.s: Normal:** The appearance of your white blood cells under the microscope is normal.\n\n**What this means for you:** Most of your white blood cell counts are healthy. The slightly low monocyte count is a minor finding that your doctor will consider in the context of your overall health.\n\n## Platelets\nThese are tiny cells that help your blood clot to stop bleeding.\n\n*   **Platelet Count (341000 per cu.mm.):** Your platelet count is **NORMAL**, indicating good clotting ability.\n*   **MPV (Mean Platelet Volume) (8.50 fl):** This measures the average size of your platelets and is also **NORMAL**.\n*   **Platelets on Smear: Adequate On Smear:** This confirms that the number of platelets seen under the microscope is appropriate.\n\n**What this means for you:** Your platelets are healthy and functioning well.\n\n## Overall Summary\n\nMost of your blood counts are within the normal range, which is generally good. The main findings to discuss with your doctor are the **mild microcytosis** (smaller red blood cells) and the **slightly low monocyte counts**. Even though your hemoglobin is normal, microcytosis can sometimes point to underlying issues like iron deficiency, and it's worth exploring further.\n\n## Next Steps\n\nIt's always best to share these results with your doctor. They can review all your findings, consider your medical history, and determine if any further tests or actions are needed, especially regarding the microcytosis and monocyte levels.\n\nFeel free to ask your doctor any questions you have about these results!",
+      "results": [
+        {
+          "test_name": "Total R.B.C. Count",
+          "value": "4.88 X 10^6/\u00b5L",
+          "normal_range": "4 to 6.2 X 10^6/\u00b5L",
+          "status": "NORMAL",
+          "explanation": "This measures the number of red blood cells, which carry oxygen throughout your body. Your count is within the normal range.",
+          "action_needed": "Continue maintaining a healthy lifestyle."
+        },
+        {
+          "test_name": "Haemoglobin",
+          "value": "13.1 gm/dl",
+          "normal_range": "12 to 14.5 gm/dl",
+          "status": "NORMAL",
+          "explanation": "Hemoglobin is the protein in red blood cells that transports oxygen. Your level is normal, indicating good oxygen-carrying capacity.",
+          "action_needed": "Maintain a balanced diet."
+        },
+        {
+          "test_name": "Total W.B.C. Count",
+          "value": "7,700 per cumm",
+          "normal_range": "4000 to 11000 per cumm",
+          "status": "NORMAL",
+          "explanation": "White blood cells are a key part of your immune system, fighting off infections. Your total count is normal, suggesting a healthy immune response.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "PCV/HCT (Packed Cell Volume/Hematocrit)",
+          "value": "36.5 %",
+          "normal_range": "36 to 44 %",
+          "status": "NORMAL",
+          "explanation": "PCV measures the percentage of red blood cells in your blood. Your result is normal, indicating a healthy proportion of red blood cells.",
+          "action_needed": "Continue with your current health practices."
+        },
+        {
+          "test_name": "MCV (Mean Corpuscular Volume)",
+          "value": "73.6 fl",
+          "normal_range": "76 to 96 fl",
+          "status": "LOW",
+          "explanation": "MCV measures the average size of your red blood cells. Your result is slightly low, indicating your red blood cells are a bit smaller than average (microcytosis).",
+          "action_needed": "Discuss this finding with your doctor, as it can sometimes be related to iron levels or other conditions."
+        },
+        {
+          "test_name": "MCH (Mean Corpuscular Hemoglobin)",
+          "value": "26.8 pg",
+          "normal_range": "26 to 32 pg",
+          "status": "NORMAL",
+          "explanation": "MCH measures the average amount of hemoglobin in each red blood cell. Your level is normal, which is good for oxygen transport.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "MCHC (Mean Corpuscular Hemoglobin Concentration)",
+          "value": "35.9 g/dl",
+          "normal_range": "31 to 35 g/dl",
+          "status": "ELEVATED",
+          "explanation": "MCHC measures the average concentration of hemoglobin inside your red blood cells. Your result is slightly elevated, which might be related to the smaller cell size.",
+          "action_needed": "Your doctor will consider this in context with other results."
+        },
+        {
+          "test_name": "RDW (Red Cell Distribution Width)",
+          "value": "14.0 %",
+          "normal_range": "12 to 15 %",
+          "status": "NORMAL",
+          "explanation": "RDW measures the variation in the size of your red blood cells. A normal result indicates your red blood cells are fairly uniform in size.",
+          "action_needed": "Continue healthy habits."
+        },
+        {
+          "test_name": "Neutrophils",
+          "value": "59.0 %",
+          "normal_range": "40 to 75 %",
+          "status": "NORMAL",
+          "explanation": "Neutrophils are a type of white blood cell that primarily fights bacterial infections. Your percentage is within the normal range.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "Eosinophils",
+          "value": "3.0 %",
+          "normal_range": "0 to 6 %",
+          "status": "NORMAL",
+          "explanation": "Eosinophils are involved in allergic reactions and fighting parasites. Your percentage is normal.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "Basophils",
+          "value": "0.0 %",
+          "normal_range": "0 to 1 %",
+          "status": "NORMAL",
+          "explanation": "Basophils are involved in allergic reactions and inflammation. Your percentage is normal, as they are typically present in very small numbers.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "Lymphocytes",
+          "value": "37.0 %",
+          "normal_range": "20 to 40 %",
+          "status": "NORMAL",
+          "explanation": "Lymphocytes are crucial for your immune system, especially in fighting viral infections. Your percentage is normal.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "Monocytes",
+          "value": "1.0 %",
+          "normal_range": "2 to 10 %",
+          "status": "LOW",
+          "explanation": "Monocytes are white blood cells that help fight chronic infections and remove damaged cells. Your percentage is slightly low.",
+          "action_needed": "Your doctor will interpret this in the context of your overall health and other results."
+        },
+        {
+          "test_name": "Absolute Neutrophils",
+          "value": "4.5 X 10\u00b3 / \u00b5L",
+          "normal_range": "2.00 to 7.00 X 10\u00b3 / \u00b5L",
+          "status": "NORMAL",
+          "explanation": "This is the actual number of neutrophils in your blood. Your count is normal, indicating good bacterial infection fighting capacity.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "Absolute Eosinophils",
+          "value": "0.2 X 10\u00b3 / \u00b5L",
+          "normal_range": "0.02 to 0.50 X 10\u00b3 / \u00b5L",
+          "status": "NORMAL",
+          "explanation": "This is the actual number of eosinophils. Your count is normal, suggesting no significant allergic reaction or parasitic infection.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "Absolute Basophils",
+          "value": "0.0 X 10\u00b3 / \u00b5L",
+          "normal_range": "0.02 to 0.10 X 10\u00b3 / \u00b5L",
+          "status": "LOW",
+          "explanation": "This is the actual number of basophils. A very low or zero count is often normal, as they are typically present in small numbers.",
+          "action_needed": "No specific action needed unless symptoms are present."
+        },
+        {
+          "test_name": "Absolute Lymphocyte",
+          "value": "2.8 X 10\u00b3 / \u00b5L",
+          "normal_range": "1.00 to 3.00 X 10\u00b3 / \u00b5L",
+          "status": "NORMAL",
+          "explanation": "This is the actual number of lymphocytes. Your count is normal, indicating a healthy viral infection fighting capacity.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "Absolute Monocytes",
+          "value": "0.1 X 10\u00b3 / \u00b5L",
+          "normal_range": "0.20 to 1.00 X 10\u00b3 / \u00b5L",
+          "status": "LOW",
+          "explanation": "This is the actual number of monocytes. Your count is slightly low, consistent with the percentage.",
+          "action_needed": "Your doctor will consider this in context with your overall health."
+        },
+        {
+          "test_name": "Platelet Count",
+          "value": "341000 per cu.mm.",
+          "normal_range": "150000 to 450000 per cu.mm.",
+          "status": "NORMAL",
+          "explanation": "Platelets are tiny cells that help your blood clot and stop bleeding. Your count is normal, indicating good clotting ability.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "MPV (Mean Platelet Volume)",
+          "value": "8.50 fl",
+          "normal_range": "7 to 10 fl",
+          "status": "NORMAL",
+          "explanation": "MPV measures the average size of your platelets. Your result is normal, suggesting healthy platelet production.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "Band Forms",
+          "value": "0.0 %",
+          "normal_range": "0 to 0 %",
+          "status": "NORMAL",
+          "explanation": "Band forms are immature neutrophils. A zero percentage is normal, indicating no significant acute infection.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "Morphology of W.B.C.s",
+          "value": "Normal.",
+          "normal_range": null,
+          "status": "NORMAL",
+          "explanation": "The appearance of your white blood cells under the microscope is normal, which is a good sign for your immune health.",
+          "action_needed": "No specific action needed."
+        },
+        {
+          "test_name": "Morphology of R.B.C.s",
+          "value": "Microcytosis(Mild).",
+          "normal_range": null,
+          "status": "LOW",
+          "explanation": "This indicates that your red blood cells appear slightly smaller than normal under the microscope, consistent with your MCV result.",
+          "action_needed": "Discuss this finding with your doctor, as it often warrants further investigation, such as checking iron levels."
+        },
+        {
+          "test_name": "Platelets on Smear",
+          "value": "Adequate On Smear",
+          "normal_range": null,
+          "status": "NORMAL",
+          "explanation": "The number of platelets observed on the blood smear is adequate, confirming your normal platelet count.",
+          "action_needed": "No specific action needed."
+        }
+      ],
+      "overall_summary": "Overall, most of your Complete Blood Count (CBC) results are within normal limits, indicating generally healthy blood components. However, there are a few notable findings: your red blood cells are mildly smaller than average (microcytosis, reflected in low MCV and smear findings) and your monocyte counts are slightly low. Your hemoglobin and total red blood cell count remain normal despite the smaller cell size.",
+      "questions_for_doctor": [
+        "What does 'Microcytosis (Mild)' mean for my health, and what could be causing it?",
+        "Is the slightly low monocyte count a concern, and what might it indicate?",
+        "Do I need to take any supplements, like iron, given the smaller red blood cells?",
+        "Should I follow up with my doctor specifically about the microcytosis and low monocytes?"
+      ],
+      "extracted_text_preview": "--- Page 1 ---\nPatient Name\nMrs. DISHA KHATRI\nLab ID\n 24897\n Reg. Date\n25-12-25\nAge/Sex\n25 Year/Female\nLocation \nMain Lab\nRef By\nDr. Swapnil\nReport Date\n25-12-25\nSample Collected At Lab\n:\n:\n:\n:\n:\n:\n:\nDISHA KHATRI Main La\nCons. Dr.\n----------\n:\n04:09 PM\n04:24 PM\nCOMPLETE BLOOD COUNT \nTotal R.B.C. Count         \nHaemoglobin                   \nTotal W.B.C.  Count      \nWBC PARAMETERS\nREF RANGE\nX 10^6/\u00b5L   \ngm/dl\nper cumm\n%\nfl\npg\ng/dl\nINVESTIGATION\nRESULT\nUNIT\n12 to 14.5\n4 to 6.2\n4000 to 11000\n36 to..."
+    }
+  ],
+  "updated_at": "2026-01-17T20:18:40.331792"
+}

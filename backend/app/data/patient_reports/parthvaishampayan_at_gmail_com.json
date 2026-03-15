@@ -1,0 +1,168 @@
+{
+  "patient_id": "parthvaishampayan@gmail.com",
+  "reports": [
+    {
+      "report_id": "11a20926-ac41-4bf2-886a-5ce2480f91cf",
+      "created_at": "2026-02-08T12:29:59.332161",
+      "filename": "Chest_Pain.pdf",
+      "interpretation": "## Understanding Your Lab Report\n\nThis report describes two different patient cases involving chest pain, and how doctors use various tests and risk assessments to decide on the best course of action.\n\n### Case 1: 45-year-old Man\n\nThis patient came to the emergency department with chest pain.\n\n#### Key Findings:\n\n*   **Blood Pressure:** 157/86 mm Hg (Elevated)\n    *   Your blood pressure is higher than ideal. This is important to manage as high blood pressure can affect your heart health.\n*   **Heart Rate:** 95 beats/min (Normal)\n    *   Your heart rate is within the normal range.\n*   **Oxygen Saturation:** 98% (Normal)\n    *   Your oxygen levels are healthy.\n*   **Body Mass Index (BMI):** 31 kg/m2 (Elevated - Obese)\n    *   Your BMI indicates you are in the obese category. Managing your weight can improve your overall health.\n*   **HbA1c:** 5.3 (Normal - from a couple years ago)\n    *   Your previous blood sugar levels were healthy.\n*   **Lipid Panel:** Within normal limits (Normal - from a couple years ago)\n    *   Your previous cholesterol levels were healthy.\n*   **ECG (Electrocardiogram):** Normal sinus rhythm with no ischemic changes (Normal)\n    *   This test checks the electrical activity of your heart. Your ECG showed a normal heart rhythm with no signs of immediate heart muscle damage.\n*   **High Sensitivity-Troponin I (hs-cTn I):** Initial 1 pg/mL, 1 hour later 1.1 pg/mL (Normal)\n    *   Troponin is a protein released when heart muscle is damaged. Your levels were very low and stable, indicating no acute heart muscle injury.\n\n#### What This Means for You (Case 1):\n\nBased on these results, including normal ECG and very low, stable troponin levels, you are considered **low risk** for an acute coronary syndrome (a serious heart condition like a heart attack). You do not need hospital admission or further immediate cardiac testing beyond what was done in the emergency department.\n\nIt is very important to follow up with your primary care physician to manage your elevated blood pressure, address your BMI, and discuss quitting smoking, as these are important risk factors for heart disease.\n\n### Case 2: 54-year-old Woman\n\nThis patient presented with chest pain and a history of diabetes, high blood pressure, and high cholesterol.\n\n#### Key Findings:\n\n*   **Body Mass Index (BMI):** 28.8 kg/m2 (Elevated - Overweight)\n    *   Your BMI indicates you are in the overweight category. Managing your weight is important for your overall health, especially with your existing conditions.\n*   **Blood Pressure:** 134/80 mm Hg (Elevated)\n    *   While you have controlled high blood pressure, this reading is still above the ideal range.\n*   **Heart Rate:** 82 beats/min (Normal)\n    *   Your heart rate is within the normal range.\n*   **Oxygen Saturation:** 96% (Normal)\n    *   Your oxygen levels are healthy.\n*   **Temperature:** 36.7 C (Normal)\n    *   Your body temperature is normal.\n*   **ECG (Electrocardiogram):** Normal sinus rhythm with nonspecific ST-T changes (Abnormal)\n    *   This test checks the electrical activity of your heart. While your heart rhythm is normal, there were minor changes that are not specific but warrant further investigation given your symptoms.\n*   **High Sensitivity-Troponin (hs-cTn):** Initial 6 pg/mL, 1 hour later 10 pg/mL (Normal to Borderline Elevated)\n    *   Troponin is a protein released when heart muscle is damaged. Your levels were in the low normal range initially and increased slightly to the upper limit of normal. This pattern places you in an **intermediate risk** category for a serious heart condition.\n*   **Coronary Computed Tomography Angiography (CCTA):** No significant coronary artery stenosis (Normal)\n    *   This imaging test looks at the arteries supplying your heart. Your CCTA showed no significant blockages.\n\n#### What This Means for You (Case 2):\n\nGiven your symptoms, medical history, and the slight increase in troponin, you were initially categorized as **intermediate risk**. However, further testing with a CCTA showed **no significant blockages** in your heart arteries. This is a good result.\n\nYou were safely discharged after ruling out significant coronary artery disease. It's important to continue managing your diabetes, high blood pressure, and high cholesterol with your doctor, and to investigate other possible causes for your chest pain.",
+      "results": [
+        {
+          "test_name": "Blood Pressure (Case 1)",
+          "value": "157/86 mm Hg",
+          "normal_range": "<120/80 mm Hg",
+          "status": "ELEVATED",
+          "explanation": "Blood pressure measures the force of blood against artery walls. Your blood pressure is higher than ideal, which can increase your risk for heart problems.",
+          "action_needed": "Follow up with primary care for blood pressure monitoring and management."
+        },
+        {
+          "test_name": "Heart Rate (Case 1)",
+          "value": "95 beats/min",
+          "normal_range": "60-100 beats/min",
+          "status": "NORMAL",
+          "explanation": "Heart rate is the number of times your heart beats per minute. Your heart rate is within the normal range.",
+          "action_needed": "None specific based on this value alone."
+        },
+        {
+          "test_name": "Oxygen Saturation (Case 1)",
+          "value": "98%",
+          "normal_range": "95-100%",
+          "status": "NORMAL",
+          "explanation": "Oxygen saturation measures the amount of oxygen in your blood. Your oxygen levels are healthy.",
+          "action_needed": "None."
+        },
+        {
+          "test_name": "Body Mass Index (BMI) (Case 1)",
+          "value": "31 kg/m2",
+          "normal_range": "18.5-24.9 kg/m2",
+          "status": "ELEVATED",
+          "explanation": "BMI is a measure that uses your height and weight to determine if your weight is healthy. Your BMI indicates you are in the obese category, which can increase health risks.",
+          "action_needed": "Discuss weight management strategies with your doctor."
+        },
+        {
+          "test_name": "HbA1c (Case 1 - prior)",
+          "value": "5.3%",
+          "normal_range": "<5.7%",
+          "status": "NORMAL",
+          "explanation": "HbA1c reflects your average blood sugar levels over the past 2-3 months. Your previous result was in the healthy range, indicating good blood sugar control at that time.",
+          "action_needed": "Regular monitoring as part of general health check-ups."
+        },
+        {
+          "test_name": "Lipid Panel (Case 1 - prior)",
+          "value": "Within normal limits",
+          "normal_range": "N/A",
+          "status": "NORMAL",
+          "explanation": "A lipid panel measures fats in your blood like cholesterol. Your previous results were healthy, indicating good cholesterol levels at that time.",
+          "action_needed": "Regular monitoring as part of general health check-ups."
+        },
+        {
+          "test_name": "ECG (Electrocardiogram) (Case 1)",
+          "value": "Normal sinus rhythm with no ischemic changes",
+          "normal_range": "N/A",
+          "status": "NORMAL",
+          "explanation": "An ECG checks the electrical activity of your heart. Your ECG showed a normal heart rhythm with no signs of immediate heart muscle damage.",
+          "action_needed": "None specific."
+        },
+        {
+          "test_name": "High Sensitivity-Troponin I (hs-cTn I) (Case 1 - initial)",
+          "value": "1 pg/mL",
+          "normal_range": "#12 pg/mL for men",
+          "status": "NORMAL",
+          "explanation": "Troponin is a protein released when heart muscle is damaged. Your initial level is very low and within the normal range, suggesting no acute heart muscle injury.",
+          "action_needed": "None specific."
+        },
+        {
+          "test_name": "High Sensitivity-Troponin I (hs-cTn I) (Case 1 - 1 hour later)",
+          "value": "1.1 pg/mL",
+          "normal_range": "#12 pg/mL for men",
+          "status": "NORMAL",
+          "explanation": "This follow-up troponin level also remains very low and within the normal range, further indicating no acute heart muscle damage. The change from the initial reading is not significant.",
+          "action_needed": "None specific."
+        },
+        {
+          "test_name": "Body Mass Index (BMI) (Case 2)",
+          "value": "28.8 kg/m2",
+          "normal_range": "18.5-24.9 kg/m2",
+          "status": "ELEVATED",
+          "explanation": "BMI is a measure that uses your height and weight to determine if your weight is healthy. Your BMI indicates you are in the overweight category, which can increase health risks.",
+          "action_needed": "Discuss weight management strategies with your doctor."
+        },
+        {
+          "test_name": "Blood Pressure (Case 2)",
+          "value": "134/80 mm Hg",
+          "normal_range": "<120/80 mm Hg",
+          "status": "ELEVATED",
+          "explanation": "Blood pressure measures the force of blood against artery walls. While you have a history of controlled hypertension, your current reading is still above the ideal range.",
+          "action_needed": "Continue current medication and follow up with your doctor for ongoing blood pressure management."
+        },
+        {
+          "test_name": "Heart Rate (Case 2)",
+          "value": "82 beats/min",
+          "normal_range": "60-100 beats/min",
+          "status": "NORMAL",
+          "explanation": "Heart rate is the number of times your heart beats per minute. Your heart rate is within the normal range.",
+          "action_needed": "None specific based on this value alone."
+        },
+        {
+          "test_name": "Oxygen Saturation (Case 2)",
+          "value": "96%",
+          "normal_range": "95-100%",
+          "status": "NORMAL",
+          "explanation": "Oxygen saturation measures the amount of oxygen in your blood. Your oxygen levels are healthy.",
+          "action_needed": "None."
+        },
+        {
+          "test_name": "Temperature (Case 2)",
+          "value": "36.7 C",
+          "normal_range": "36.1-37.2 C",
+          "status": "NORMAL",
+          "explanation": "Body temperature is a measure of your body's heat. Your temperature is within the normal range.",
+          "action_needed": "None."
+        },
+        {
+          "test_name": "ECG (Electrocardiogram) (Case 2)",
+          "value": "Normal sinus rhythm with nonspecific ST-T changes",
+          "normal_range": "N/A",
+          "status": "ABNORMAL",
+          "explanation": "An ECG checks the electrical activity of your heart. While your heart rhythm is normal, there are minor changes that are not specific to a particular heart problem but warrant further investigation given your symptoms.",
+          "action_needed": "Further cardiac testing is recommended."
+        },
+        {
+          "test_name": "High Sensitivity-Troponin (hs-cTn) (Case 2 - initial)",
+          "value": "6 pg/mL",
+          "normal_range": "<10 pg/mL for women",
+          "status": "NORMAL",
+          "explanation": "Troponin is a protein released when heart muscle is damaged. Your initial level is in the low normal range, which means it's not clearly elevated but also not extremely low, requiring further monitoring.",
+          "action_needed": "Follow-up troponin testing is indicated."
+        },
+        {
+          "test_name": "High Sensitivity-Troponin (hs-cTn) (Case 2 - 1 hour later)",
+          "value": "10 pg/mL",
+          "normal_range": "<10 pg/mL for women",
+          "status": "BORDERLINE ELEVATED",
+          "explanation": "Your follow-up troponin level is at the upper limit of the normal range for women, and there was a slight increase from your initial reading. This change, while not a rapid rule-in for ACS, places you in an intermediate risk category.",
+          "action_needed": "Further cardiac imaging and testing are recommended to assess heart health."
+        },
+        {
+          "test_name": "Coronary Computed Tomography Angiography (CCTA) (Case 2)",
+          "value": "No significant coronary artery stenosis",
+          "normal_range": "N/A",
+          "status": "NORMAL",
+          "explanation": "CCTA is an imaging test that looks at the arteries supplying your heart. Your CCTA showed no significant blockages in your coronary arteries.",
+          "action_needed": "None specific, other causes of chest pain should be ruled out."
+        }
+      ],
+      "overall_summary": "This report details two cases of chest pain evaluation. The 45-year-old man (Case 1) was determined to be low-risk for acute coronary syndrome based on normal ECG and stable, low troponin levels, despite elevated blood pressure and BMI. The 54-year-old woman (Case 2) was initially intermediate-risk due to non-specific ECG changes and a slight rise in troponin, but subsequent CCTA revealed no significant coronary artery blockages.",
+      "questions_for_doctor": [
+        "WHAT IS THE LIKELIHOOD THAT THIS IS AN EPISODE OF ACUTE CORONARY SYNDROME?",
+        "HOW WOULD YOU ASSESS HIS RISK?",
+        "DOES THIS PATIENT NEED HOSPITAL ADMISSION?",
+        "DOES THIS PATIENT NEED FURTHER TESTING?",
+        "WILL THIS PATIENT BENEFIT FROM FURTHER TESTING?",
+        "HOW WOULD THE DECISION BE AFFECTED IF PATIENT HAD A KNOWN PRIOR HISTORY OF CAD?"
+      ],
+      "extracted_text_preview": "--- Page 1 ---\nCASE REPORT\nHEART CARE TEAM/MULTIDISCIPLINARY TEAM LIVE\nChest Pain\nWho Needs Additional Testing Beyond ECG\nand Troponin?\nRakhee Makhija, MD, Debabrata Mukherjee, MD, MS\nABSTRACT\nIn the \ufb01rst case, we describe a 45-year-old man who presented to the emergency department for evaluation of chest\npain. He reported having chest discomfort 5 days prior that lasted a few minutes after an altercation with his coworker.\nIn the second case, we describe a 54-year-old woman with history of well..."
+    }
+  ],
+  "updated_at": "2026-02-08T12:29:59.332182"
+}

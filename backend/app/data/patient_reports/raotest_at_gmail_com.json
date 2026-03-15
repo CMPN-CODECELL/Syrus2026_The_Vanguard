@@ -1,0 +1,87 @@
+{
+  "patient_id": "raotest@gmail.com",
+  "reports": [
+    {
+      "report_id": "59247a26-6a4e-4e8c-9516-2c78b95ba2b8",
+      "created_at": "2026-02-08T13:47:58.804906",
+      "filename": "medical_document.pdf",
+      "file_path": "C:\\Users\\harsh\\medvision-ai\\backend\\app\\data\\patient_reports\\files\\raotest_at_gmail_com\\59247a26-6a4e-4e8c-9516-2c78b95ba2b8_medical_document.pdf",
+      "interpretation": "## Medical Examination Report Summary\n\nHere's a simple explanation of your medical report:\n\n### Patient Information\n*   **Name:** Mr. Kartik Phadale\n*   **Age:** 19 years old\n*   **Gender:** Male\n\n### Your Main Concerns (Chief Complaints)\nYou came in with:\n*   A severe cold\n*   Episodes of shivering\n*   A persistent cough, described as a \"whooping cough\"\n\n### What the Doctor Found (Clinical Findings)\n*   **Body Temperature:** Your temperature was elevated, meaning you have a fever. While the exact number isn't given, a normal temperature is typically between 97.8\u00b0F and 99.1\u00b0F (36.5\u00b0C and 37.3\u00b0C).\n*   **General Condition:** You appeared tired and showed signs of difficulty breathing.\n*   **Breathing:** You have a persistent cough that produces mucus. You also reported severe coughing fits.\n\n### Possible Diagnoses (Provisional Diagnosis)\nBased on your symptoms and the examination, the doctor has made the following assessments:\n*   **Upper Respiratory Tract Infection (URTI):** This has been confirmed. This is a common infection affecting your nose, throat, or airways, like a cold or flu.\n*   **Tuberculosis (TB):** This is currently suspected. Tuberculosis is a serious bacterial infection, mainly affecting the lungs. More tests are needed to confirm or rule this out.\n\n### Recommended Tests\nTo get a clearer picture and confirm the suspected diagnosis, the doctor has recommended these tests:\n*   Chest X-ray\n*   Sputum culture and analysis (a test on your cough mucus)\n*   Tuberculin skin test (Mantoux test, for TB)\n*   Complete blood count (a general blood test)\n*   ESR (Erythrocyte Sedimentation Rate, a blood test for inflammation)\n\n### Your Treatment Plan (Management Plan)\n*   You have started treatment to help with your cold and cough symptoms.\n*   It's very important that you stay isolated (away from others) until Tuberculosis is ruled out to prevent any potential spread.\n*   A follow-up appointment will be scheduled once the results of your tests are available.\n*   You were also given advice on good respiratory hygiene (like covering your mouth when you cough or sneeze).\n\n### Examining Physician\n*   **Doctor:** Dr. Lucia Kaminos\n\nThis report is for demonstration purposes only. Always discuss your results and treatment plan directly with your healthcare provider.",
+      "results": [
+        {
+          "test_name": "Body Temperature",
+          "value": "Elevated",
+          "normal_range": "Typically 97.8\u00b0F to 99.1\u00b0F (36.5\u00b0C to 37.3\u00b0C)",
+          "status": "ELEVATED",
+          "explanation": "Your body temperature is higher than normal, which is often a sign that your body is fighting an infection, commonly known as a fever.",
+          "action_needed": "Monitor your temperature and follow your doctor's advice for managing fever and any underlying infection."
+        },
+        {
+          "test_name": "Upper Respiratory Tract Infection Diagnosis",
+          "value": "Confirmed",
+          "normal_range": "N/A",
+          "status": "CRITICAL",
+          "explanation": "This diagnosis means you have an infection affecting your nose, throat, or airways, which is consistent with your cold and cough symptoms.",
+          "action_needed": "Continue with the symptomatic treatment initiated and practice good respiratory hygiene."
+        },
+        {
+          "test_name": "Tuberculosis Diagnosis",
+          "value": "Suspected",
+          "normal_range": "N/A",
+          "status": "CRITICAL",
+          "explanation": "Tuberculosis is a serious bacterial infection, mainly affecting the lungs. It is currently suspected based on your symptoms, and further tests are urgently needed to confirm or rule it out.",
+          "action_needed": "Undergo all recommended investigations (Chest X-ray, Sputum culture, Mantoux test) promptly and maintain strict isolation precautions as advised by your doctor."
+        }
+      ],
+      "overall_summary": "Mr. Kartik Phadale, 19, presented with symptoms including severe cold, shivering, and persistent whooping cough. Clinical findings showed an elevated body temperature and signs of respiratory distress. An Upper Respiratory Tract Infection has been confirmed, and Tuberculosis is suspected, pending further diagnostic tests.",
+      "questions_for_doctor": [
+        "What are the specific numerical values for Mr. Phadale's elevated temperature?",
+        "When can Mr. Phadale expect the results from the Chest X-ray, Sputum culture, Tuberculin skin test, Complete Blood Count, and ESR?",
+        "What is the detailed treatment plan for the confirmed Upper Respiratory Tract Infection?",
+        "What are the immediate next steps and specific precautions Mr. Phadale should take while Tuberculosis is still suspected?"
+      ],
+      "extracted_text_preview": "--- Page 1 ---\ntest_medical_report.md\n2026-01-24\n1 / 2\nXYZ Clinic\nMedical Examination Report\nDate of Examination: 23rd January 2026\nPatient Information:\nName: Mr. Kartik Phadale\nPatient TOKEN NO: #1\nAge: 19\nGender: Male\nChief Complaints\nPatient presents with the following symptoms:\nSevere cold\nShivering episodes\nPersistent whooping cough\nClinical Findings\nVital Signs:\nTemperature: Elevated\nGeneral appearance: Patient appears fatigued with visible signs of respiratory distress\nRespiratory Assessm..."
+    },
+    {
+      "report_id": "f585e5a4-6e7b-485e-8dd8-a23aaaea2e04",
+      "created_at": "2026-02-08T12:25:48.566802",
+      "filename": "medical_document.pdf",
+      "interpretation": "## Understanding Your Medical Report\n\nHere's a simple breakdown of your recent medical examination:\n\n### Patient Information\n*   **Name:** Mr. Kartik Phadale\n*   **Age:** 19 years old\n*   **Gender:** Male\n*   **Date of Examination:** 23rd January 2026\n\n### Your Symptoms (Chief Complaints)\nYou reported experiencing:\n*   A severe cold\n*   Episodes of shivering\n*   A persistent whooping cough\n\n### What the Doctor Found (Clinical Findings)\n*   **Temperature:** Your body temperature was elevated (you have a fever).\n*   **General Appearance:** You appeared tired and showed signs of difficulty breathing.\n*   **Breathing:** You have a persistent cough that produces mucus, and you reported severe coughing fits.\n\n### Possible Diagnoses (Provisional Diagnosis)\nBased on your symptoms and the doctor's findings:\n1.  **Upper Respiratory Tract Infection (URTI):** This is a common infection affecting your nose, throat, and airways, and it has been **confirmed**.\n2.  **Tuberculosis (TB):** This is a serious bacterial infection, usually affecting the lungs. It is currently **suspected**, meaning more tests are needed to confirm or rule it out.\n\n### Recommended Tests (Investigations)\nTo get a clearer picture, the doctor has recommended the following tests:\n*   **Chest X-ray:** An imaging test to look at your lungs.\n*   **Sputum culture and analysis:** A test of your phlegm to check for bacteria, especially TB.\n*   **Tuberculin skin test (Mantoux test):** A skin test to check for TB exposure.\n*   **Complete blood count (CBC):** A blood test to check your overall health and look for signs of infection.\n*   **ESR (Erythrocyte Sedimentation Rate):** A blood test that can indicate inflammation or infection in the body.\n\n### Your Treatment Plan (Management Plan)\n*   **Symptomatic Treatment:** You've started medication to help with your cold and cough symptoms.\n*   **Isolation:** It's very important that you stay isolated (away from others) until Tuberculosis is definitely ruled out. This helps prevent any potential spread.\n*   **Follow-up:** You'll have another appointment after your test results are ready.\n*   **Hygiene:** You were advised on good respiratory hygiene (like covering your mouth when you cough or sneeze).\n\n### Examining Physician\n*   **Doctor:** Dr. Lucia Kaminos\n\n**Important Note:** This report indicates a confirmed common infection and a suspected serious one. It's crucial to follow all recommended investigations and isolation precautions.",
+      "results": [
+        {
+          "test_name": "Body Temperature",
+          "value": "Elevated",
+          "normal_range": "Typically around 37\u00b0C (98.6\u00b0F)",
+          "status": "ELEVATED",
+          "explanation": "Body temperature measures the heat produced by the body. An elevated temperature, or fever, often indicates an infection or inflammation.",
+          "action_needed": "Monitor temperature and continue symptomatic treatment for cold and cough."
+        },
+        {
+          "test_name": "Upper Respiratory Tract Infection Diagnosis",
+          "value": "Confirmed",
+          "normal_range": "N/A",
+          "status": "CRITICAL",
+          "explanation": "An Upper Respiratory Tract Infection (URTI) is an infection affecting the nose, throat, and airways. It has been confirmed based on your symptoms and clinical findings.",
+          "action_needed": "Continue symptomatic treatment for cold and cough as advised."
+        },
+        {
+          "test_name": "Tuberculosis Diagnosis",
+          "value": "Suspected",
+          "normal_range": "N/A",
+          "status": "CRITICAL",
+          "explanation": "Tuberculosis (TB) is a serious bacterial infection, primarily of the lungs. It is currently suspected and requires further testing for confirmation.",
+          "action_needed": "Undergo recommended investigations (Chest X-ray, Sputum culture, Mantoux test) and maintain strict isolation precautions until TB is ruled out."
+        }
+      ],
+      "overall_summary": "Mr. Kartik Phadale, 19, presents with severe cold, shivering, and persistent whooping cough. Clinical findings include elevated temperature and respiratory distress. A confirmed Upper Respiratory Tract Infection and suspected Tuberculosis are the provisional diagnoses, requiring further investigation and strict isolation.",
+      "questions_for_doctor": [
+        "What are the next steps for confirming or ruling out Tuberculosis?",
+        "How long should I maintain strict isolation precautions?",
+        "What specific medications have been prescribed for my cold and cough?",
+        "When will the results of the recommended investigations be available?"
+      ],
+      "extracted_text_preview": "--- Page 1 ---\ntest_medical_report.md\n2026-01-24\n1 / 2\nXYZ Clinic\nMedical Examination Report\nDate of Examination: 23rd January 2026\nPatient Information:\nName: Mr. Kartik Phadale\nPatient TOKEN NO: #1\nAge: 19\nGender: Male\nChief Complaints\nPatient presents with the following symptoms:\nSevere cold\nShivering episodes\nPersistent whooping cough\nClinical Findings\nVital Signs:\nTemperature: Elevated\nGeneral appearance: Patient appears fatigued with visible signs of respiratory distress\nRespiratory Assessm..."
+    }
+  ],
+  "updated_at": "2026-02-08T13:47:58.804983"
+}
