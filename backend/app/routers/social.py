@@ -30,7 +30,7 @@ async def get_my_profile(current_doctor = Depends(get_current_doctor_from_token)
     """Get current doctor's extended profile"""
     try:
         # Get extended profile from Firebase
-        profile_data = await firebase.get_doctor_profile(current_doctor['id'])
+        profile_data = firebase.get_doctor_profile(current_doctor['id'])
         
         if not profile_data:
             # Return default extended profile
@@ -59,7 +59,7 @@ async def update_my_profile(
         data_dict['profile_completion'] = calculate_profile_completion(data_dict)
         
         # Save to Firebase
-        await firebase.update_doctor_profile(current_doctor['id'], data_dict)
+        firebase.update_doctor_profile(current_doctor['id'], data_dict)
         
         return {"message": "Profile updated", "profile_completion": data_dict['profile_completion']}
     except Exception as e:
@@ -75,17 +75,17 @@ async def get_doctor_profile(
     """Get public profile of a doctor"""
     try:
         # Get basic doctor info
-        doctor = await firebase.get_doctor_by_id(doctor_id)
+        doctor = firebase.get_doctor_by_id(doctor_id)
         if not doctor:
             raise HTTPException(status_code=404, detail="Doctor not found")
         
         # Get extended profile
-        profile = await firebase.get_doctor_profile(doctor_id) or {}
+        profile = firebase.get_doctor_profile(doctor_id) or {}
         privacy = profile.get('privacy_settings', {})
         
         # Check follow status
-        is_following = await firebase.is_following(current_doctor['id'], doctor_id)
-        is_follower = await firebase.is_following(doctor_id, current_doctor['id'])
+        is_following = firebase.is_following(current_doctor['id'], doctor_id)
+        is_follower = firebase.is_following(doctor_id, current_doctor['id'])
         
         # Build public profile respecting privacy
         public_profile = DoctorPublicProfile(
@@ -130,11 +130,11 @@ async def follow_doctor(
             raise HTTPException(status_code=400, detail="Cannot follow yourself")
         
         # Check if already following
-        if await firebase.is_following(current_doctor['id'], doctor_id):
+        if firebase.is_following(current_doctor['id'], doctor_id):
             raise HTTPException(status_code=400, detail="Already following this doctor")
         
         # Check if target doctor exists
-        target = await firebase.get_doctor_by_id(doctor_id)
+        target = firebase.get_doctor_by_id(doctor_id)
         if not target:
             raise HTTPException(status_code=404, detail="Doctor not found")
         
@@ -146,11 +146,11 @@ async def follow_doctor(
             created_at=datetime.utcnow()
         )
         
-        await firebase.create_follow(follow.model_dump())
+        firebase.create_follow(follow.model_dump())
         
         # Update counters
-        await firebase.increment_follower_count(doctor_id)
-        await firebase.increment_following_count(current_doctor['id'])
+        firebase.increment_follower_count(doctor_id)
+        firebase.increment_following_count(current_doctor['id'])
         
         return {"message": "Followed successfully"}
     except HTTPException:
@@ -171,15 +171,15 @@ async def unfollow_doctor(
             raise HTTPException(status_code=400, detail="Cannot unfollow yourself")
         
         # Check if following
-        if not await firebase.is_following(current_doctor['id'], doctor_id):
+        if not firebase.is_following(current_doctor['id'], doctor_id):
             raise HTTPException(status_code=400, detail="Not following this doctor")
         
         # Delete follow relationship
-        await firebase.delete_follow(current_doctor['id'], doctor_id)
+        firebase.delete_follow(current_doctor['id'], doctor_id)
         
         # Update counters
-        await firebase.decrement_follower_count(doctor_id)
-        await firebase.decrement_following_count(current_doctor['id'])
+        firebase.decrement_follower_count(doctor_id)
+        firebase.decrement_following_count(current_doctor['id'])
         
         return {"message": "Unfollowed successfully"}
     except HTTPException:
@@ -197,7 +197,7 @@ async def get_followers(
 ):
     """Get followers of a doctor"""
     try:
-        followers = await firebase.get_followers(doctor_id, limit)
+        followers = firebase.get_followers(doctor_id, limit)
         return {"followers": followers, "count": len(followers)}
     except Exception as e:
         print(f"[FOLLOW] Error getting followers: {e}")
@@ -212,7 +212,7 @@ async def get_following(
 ):
     """Get doctors that a doctor is following"""
     try:
-        following = await firebase.get_following(doctor_id, limit)
+        following = firebase.get_following(doctor_id, limit)
         return {"following": following, "count": len(following)}
     except Exception as e:
         print(f"[FOLLOW] Error getting following: {e}")
@@ -231,11 +231,11 @@ async def get_suggested_doctors(
     """Get suggested doctors to follow based on specialization"""
     try:
         # Get current doctor's specialization
-        doctor = await firebase.get_doctor_by_id(current_doctor['id'])
+        doctor = firebase.get_doctor_by_id(current_doctor['id'])
         specialization = doctor.get('specialization', '') if doctor else ''
         
         # Get doctors with same specialization that user isn't following
-        suggestions = await firebase.get_suggested_doctors(
+        suggestions = firebase.get_suggested_doctors(
             current_doctor['id'], 
             specialization, 
             limit

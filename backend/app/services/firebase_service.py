@@ -118,7 +118,7 @@ class FirebaseService:
     # DOCTOR OPERATIONS
     # ===========================================
     
-    async def create_doctor(self, doctor_data: dict) -> dict:
+    def create_doctor(self, doctor_data: dict) -> dict:
         """Create a new doctor in Firestore."""
         if not self.is_connected:
             raise ConnectionError("Firebase not connected")
@@ -136,7 +136,7 @@ class FirebaseService:
         doc_ref.set(data)
         return doctor_data
     
-    async def get_doctor_by_email(self, email: str) -> Optional[dict]:
+    def get_doctor_by_email(self, email: str) -> Optional[dict]:
         """Get doctor by email from Firestore."""
         if not self.is_connected:
             return None
@@ -148,18 +148,25 @@ class FirebaseService:
             return doc.to_dict()
         return None
     
-    async def get_doctor_by_id(self, doctor_id: str) -> Optional[dict]:
+    def get_doctor_by_id(self, doctor_id: str) -> Optional[dict]:
         """Get doctor by ID from Firestore."""
         if not self.is_connected:
             return None
         
+        # Try direct lookup first (by document ID = email), then by id field
         docs = self._db.collection("doctors").where("id", "==", doctor_id).limit(1).stream()
-        
         for doc in docs:
             return doc.to_dict()
+        
+        # Fallback: try direct document lookup
+        doc_ref = self._db.collection("doctors").document(doctor_id)
+        doc = doc_ref.get()
+        if doc.exists:
+            return doc.to_dict()
+        
         return None
     
-    async def update_doctor(self, email: str, updates: dict) -> Optional[dict]:
+    def update_doctor(self, email: str, updates: dict) -> Optional[dict]:
         """Update doctor data in Firestore."""
         if not self.is_connected:
             return None
@@ -175,7 +182,7 @@ class FirebaseService:
         
         return {**doc.to_dict(), **updates}
     
-    async def doctor_exists(self, email: str) -> bool:
+    def doctor_exists(self, email: str) -> bool:
         """Check if doctor with email exists."""
         if not self.is_connected:
             return False
@@ -187,7 +194,7 @@ class FirebaseService:
     # PATIENT OPERATIONS
     # ===========================================
     
-    async def create_patient(self, patient_data: dict) -> dict:
+    def create_patient(self, patient_data: dict) -> dict:
         """Create a new patient in Firestore."""
         if not self.is_connected:
             raise ConnectionError("Firebase not connected")
@@ -205,7 +212,7 @@ class FirebaseService:
         doc_ref.set(data)
         return patient_data
     
-    async def get_patient_by_email(self, email: str) -> Optional[dict]:
+    def get_patient_by_email(self, email: str) -> Optional[dict]:
         """Get patient by email from Firestore."""
         if not self.is_connected:
             return None
@@ -217,7 +224,7 @@ class FirebaseService:
             return doc.to_dict()
         return None
     
-    async def get_patient_by_id(self, patient_id: str) -> Optional[dict]:
+    def get_patient_by_id(self, patient_id: str) -> Optional[dict]:
         """Get patient by ID from Firestore."""
         if not self.is_connected:
             return None
@@ -228,7 +235,7 @@ class FirebaseService:
             return doc.to_dict()
         return None
     
-    async def update_patient(self, email: str, updates: dict) -> Optional[dict]:
+    def update_patient(self, email: str, updates: dict) -> Optional[dict]:
         """Update patient data in Firestore."""
         if not self.is_connected:
             return None
@@ -244,7 +251,7 @@ class FirebaseService:
         
         return {**doc.to_dict(), **updates}
     
-    async def patient_exists(self, email: str) -> bool:
+    def patient_exists(self, email: str) -> bool:
         """Check if patient with email exists."""
         if not self.is_connected:
             return False
@@ -252,7 +259,7 @@ class FirebaseService:
         doc_ref = self._db.collection("patients").document(email)
         return doc_ref.get().exists
     
-    async def get_all_patients(self, limit: int = 100) -> List[dict]:
+    def get_all_patients(self, limit: int = 100) -> List[dict]:
         """Get all patients from Firestore."""
         if not self.is_connected:
             return []
@@ -264,7 +271,7 @@ class FirebaseService:
     # DEMO PATIENT DATA (for AI analysis demo)
     # ===========================================
     
-    async def get_demo_patients(self) -> List[dict]:
+    def get_demo_patients(self) -> List[dict]:
         """Get demo patients for AI analysis demo."""
         if not self.is_connected:
             # Return hardcoded demo if Firebase not connected
@@ -279,7 +286,7 @@ class FirebaseService:
         
         return patients
     
-    async def get_demo_patient(self, patient_id: str) -> Optional[dict]:
+    def get_demo_patient(self, patient_id: str) -> Optional[dict]:
         """Get a specific demo patient."""
         if not self.is_connected:
             if patient_id == "patient_sarah_001":
@@ -302,7 +309,7 @@ class FirebaseService:
     # SOCIAL / PROFILE OPERATIONS  
     # ===========================================
     
-    async def get_doctor_profile(self, doctor_id: str) -> Optional[dict]:
+    def get_doctor_profile(self, doctor_id: str) -> Optional[dict]:
         """Get extended profile for doctor."""
         if not self.is_connected:
             return None
@@ -311,7 +318,7 @@ class FirebaseService:
         doc = doc_ref.get()
         return doc.to_dict() if doc.exists else None
     
-    async def update_doctor_profile(self, doctor_id: str, profile_data: dict) -> dict:
+    def update_doctor_profile(self, doctor_id: str, profile_data: dict) -> dict:
         """Update extended profile for doctor."""
         if not self.is_connected:
             raise ConnectionError("Firebase not connected")
@@ -321,7 +328,7 @@ class FirebaseService:
         doc_ref.set(profile_data, merge=True)
         return profile_data
     
-    async def create_follow(self, follow_data: dict) -> dict:
+    def create_follow(self, follow_data: dict) -> dict:
         """Create a follow relationship."""
         if not self.is_connected:
             raise ConnectionError("Firebase not connected")
@@ -330,7 +337,7 @@ class FirebaseService:
         doc_ref.set(follow_data)
         return follow_data
     
-    async def delete_follow(self, follower_id: str, following_id: str) -> bool:
+    def delete_follow(self, follower_id: str, following_id: str) -> bool:
         """Delete a follow relationship."""
         if not self.is_connected:
             return False
@@ -346,7 +353,7 @@ class FirebaseService:
             return True
         return False
     
-    async def is_following(self, follower_id: str, following_id: str) -> bool:
+    def is_following(self, follower_id: str, following_id: str) -> bool:
         """Check if one doctor follows another."""
         if not self.is_connected:
             return False
@@ -358,7 +365,7 @@ class FirebaseService:
         
         return any(True for _ in docs)
     
-    async def get_followers(self, doctor_id: str, limit: int = 20) -> list:
+    def get_followers(self, doctor_id: str, limit: int = 20) -> list:
         """Get list of followers for a doctor."""
         if not self.is_connected:
             return []
@@ -370,18 +377,17 @@ class FirebaseService:
         
         for doc in docs:
             data = doc.to_dict()
-            # Get follower's basic info
-            follower = await self.get_doctor_by_id(data['follower_id'])
+            follower = self.get_doctor_by_id(data['follower_id'])
             if follower:
                 followers.append({
                     'id': data['follower_id'],
                     'name': follower.get('name', 'Doctor'),
                     'specialization': follower.get('specialization', ''),
-                    'profile_photo': None  # Will be from profile
+                    'profile_photo': None
                 })
         return followers
     
-    async def get_following(self, doctor_id: str, limit: int = 20) -> list:
+    def get_following(self, doctor_id: str, limit: int = 20) -> list:
         """Get list of doctors that a doctor is following."""
         if not self.is_connected:
             return []
@@ -393,8 +399,7 @@ class FirebaseService:
         
         for doc in docs:
             data = doc.to_dict()
-            # Get following doctor's info
-            followed = await self.get_doctor_by_id(data['following_id'])
+            followed = self.get_doctor_by_id(data['following_id'])
             if followed:
                 following.append({
                     'id': data['following_id'],
@@ -404,7 +409,7 @@ class FirebaseService:
                 })
         return following
     
-    async def increment_follower_count(self, doctor_id: str):
+    def increment_follower_count(self, doctor_id: str):
         """Increment follower count for a doctor."""
         if not self.is_connected:
             return
@@ -417,7 +422,7 @@ class FirebaseService:
         else:
             doc_ref.set({"followers_count": 1}, merge=True)
     
-    async def decrement_follower_count(self, doctor_id: str):
+    def decrement_follower_count(self, doctor_id: str):
         """Decrement follower count for a doctor."""
         if not self.is_connected:
             return
@@ -428,7 +433,7 @@ class FirebaseService:
             current = doc.to_dict().get('followers_count', 0)
             doc_ref.update({"followers_count": max(0, current - 1)})
     
-    async def increment_following_count(self, doctor_id: str):
+    def increment_following_count(self, doctor_id: str):
         """Increment following count for a doctor."""
         if not self.is_connected:
             return
@@ -441,7 +446,7 @@ class FirebaseService:
         else:
             doc_ref.set({"following_count": 1}, merge=True)
     
-    async def decrement_following_count(self, doctor_id: str):
+    def decrement_following_count(self, doctor_id: str):
         """Decrement following count for a doctor."""
         if not self.is_connected:
             return
@@ -452,7 +457,7 @@ class FirebaseService:
             current = doc.to_dict().get('following_count', 0)
             doc_ref.update({"following_count": max(0, current - 1)})
     
-    async def get_suggested_doctors(self, current_id: str, specialization: str, limit: int = 10) -> list:
+    def get_suggested_doctors(self, current_id: str, specialization: str, limit: int = 10) -> list:
         """Get suggested doctors to follow based on specialization."""
         if not self.is_connected:
             return []
@@ -462,7 +467,7 @@ class FirebaseService:
         # Get doctors with same specialization
         docs = self._db.collection("doctors")\
             .where("specialization", "==", specialization)\
-            .limit(limit + 10).stream()  # Get extra to filter
+            .limit(limit + 10).stream()
         
         for doc in docs:
             data = doc.to_dict()
@@ -473,7 +478,7 @@ class FirebaseService:
                 continue
             
             # Skip if already following
-            if await self.is_following(current_id, doctor_id):
+            if self.is_following(current_id, doctor_id):
                 continue
             
             suggestions.append({
@@ -554,57 +559,75 @@ class FirebaseService:
     
     
     def get_appointments_by_doctor_date(self, doctor_id: str, date: str) -> List[dict]:
-        """Get all appointments for a doctor on a specific date."""
+        """Get all appointments for a doctor on a specific date.
+        Uses single-field query + Python filtering to avoid composite index requirements."""
         if not self.is_connected:
             return []
         
         try:
+            # Query by doctor_id only, filter queue_date in Python
+            # This avoids Firestore composite index requirements
             docs = self._db.collection("appointments")\
                 .where("doctor_id", "==", doctor_id)\
-                .where("queue_date", "==", date)\
                 .stream()
             
-            return [doc.to_dict() for doc in docs]
+            results = []
+            for doc in docs:
+                data = doc.to_dict()
+                if data.get("queue_date") == date:
+                    results.append(data)
+            
+            print(f"DEBUG get_appointments_by_doctor_date: doctor={doctor_id}, date={date}, found={len(results)}")
+            return results
         except Exception as e:
-            print(f"Error fetching doctor appointments: {e}")
+            print(f"ERROR get_appointments_by_doctor_date: {type(e).__name__}: {e}")
             return []
 
     def get_appointments_by_doctor_status(self, doctor_id: str, status: str) -> List[dict]:
-        """Get all appointments for a doctor with a specific status."""
+        """Get all appointments for a doctor with a specific status.
+        Uses single-field query + Python filtering to avoid composite index requirements."""
         if not self.is_connected:
             return []
         
         try:
+            # Query by doctor_id only, filter status in Python
             docs = self._db.collection("appointments")\
                 .where("doctor_id", "==", doctor_id)\
-                .where("status", "==", status)\
                 .stream()
             
-            return [doc.to_dict() for doc in docs]
+            results = []
+            for doc in docs:
+                data = doc.to_dict()
+                if data.get("status") == status:
+                    results.append(data)
+            
+            print(f"DEBUG get_appointments_by_doctor_status: doctor={doctor_id}, status={status}, found={len(results)}")
+            return results
         except Exception as e:
-            print(f"Error fetching doctor appointments by status: {e}")
+            print(f"ERROR get_appointments_by_doctor_status: {type(e).__name__}: {e}")
             return []
     
     def has_active_appointment_with_doctor(self, patient_id: str, doctor_id: str) -> bool:
-        """Check if patient has an active (pending/confirmed) appointment with this doctor."""
+        """Check if patient has an active (pending/confirmed) appointment with this doctor.
+        Uses single-field query + Python filtering to avoid composite index requirements."""
         if not self.is_connected:
             return False
         
         try:
-            # Get all appointments for this patient with this doctor
+            # Query by patient_id only, filter doctor_id and status in Python
             docs = self._db.collection("appointments")\
                 .where("patient_id", "==", patient_id)\
-                .where("doctor_id", "==", doctor_id)\
                 .stream()
             
             active_statuses = ["pending", "confirmed", "in_progress"]
             for doc in docs:
                 data = doc.to_dict()
-                if data.get("status") in active_statuses:
+                if data.get("doctor_id") == doctor_id and data.get("status") in active_statuses:
+                    print(f"DEBUG has_active_appointment: FOUND active appointment for patient={patient_id}, doctor={doctor_id}")
                     return True
             return False
         except Exception as e:
-            print(f"Error checking active appointments: {e}")
+            print(f"ERROR has_active_appointment: {type(e).__name__}: {e}")
             return False
     
     def update_appointment(self, appointment_id: str, updates: dict) -> Optional[dict]:
@@ -722,24 +745,6 @@ class FirebaseService:
             results.append(data)
         
         return results
-    
-    def get_doctor_by_id(self, doctor_id: str) -> Optional[dict]:
-        """Get doctor by ID from Firestore."""
-        if not self.is_connected:
-            return None
-        
-        # Try direct lookup first
-        doc_ref = self._db.collection("doctors").document(doctor_id)
-        doc = doc_ref.get()
-        if doc.exists:
-            return doc.to_dict()
-        
-        # Fallback: search by id field
-        docs = self._db.collection("doctors").where("id", "==", doctor_id).limit(1).stream()
-        for doc in docs:
-            return doc.to_dict()
-        
-        return None
 
 # ===========================================
 # HARDCODED DEMO DATA (fallback)

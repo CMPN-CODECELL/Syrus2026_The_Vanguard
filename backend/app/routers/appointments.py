@@ -437,6 +437,18 @@ async def get_doctor_appointments_today(doctor_id: str, date: Optional[str] = No
         remaining = total - completed - in_progress
         no_shows = len([a for a in appointments if a.get("status") == AppointmentStatus.NO_SHOW])
         
+        # Serialize datetime objects to strings for JSON response
+        def serialize_appointment(apt: dict) -> dict:
+            result = {}
+            for k, v in apt.items():
+                if hasattr(v, 'isoformat'):
+                    result[k] = v.isoformat()
+                else:
+                    result[k] = v
+            return result
+        
+        appointments = [serialize_appointment(a) for a in appointments]
+        
         return {
             "appointments": appointments,
             "stats": {
@@ -474,6 +486,15 @@ async def get_doctor_appointments_upcoming(doctor_id: str, days: int = 7):
             all_appointments.extend(date_apps)
         
         total = len(all_appointments)
+        
+        # Serialize datetime objects to strings for JSON response
+        def serialize_appointment(apt: dict) -> dict:
+            return {k: v.isoformat() if hasattr(v, 'isoformat') else v for k, v in apt.items()}
+        
+        appointments_by_date = {
+            date: [serialize_appointment(a) for a in apps]
+            for date, apps in appointments_by_date.items()
+        }
         
         return {
             "appointments_by_date": appointments_by_date,
