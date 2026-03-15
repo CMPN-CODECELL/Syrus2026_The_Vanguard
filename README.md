@@ -1,3 +1,6 @@
+# TEAM | The Vanguard
+**Problem Statement**: Open Innovation
+
 # MedVision AI
 
 **AI-Powered Smart Healthcare Platform**
