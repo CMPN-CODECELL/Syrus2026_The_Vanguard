@@ -1,0 +1,227 @@
+================================================================================
+                    MEDVISION AI - DEMO NARRATION SCRIPT
+                        Gemini 3 Hackathon Submission
+                            Duration: 3 Minutes
+================================================================================
+
+--------------------------------------------------------------------------------
+SCENE 1: THE HOOK (0:00 - 0:30)
+--------------------------------------------------------------------------------
+
+[VISUAL: Black screen fading to patient photo (stock image of elderly woman)]
+
+NARRATOR:
+"Meet Sarah. She's sixty-two years old.
+
+Eight years ago, she was diagnosed with breast cancer.
+
+Since then, she's seen fourteen different specialists, had twenty-three imaging 
+scans, and accumulated over two thousand pages of medical records.
+
+[VISUAL: Stack of papers animation, numbers counting up]
+
+When she walks into her oncologist's office today, her doctor has fifteen 
+minutes to make sense of eight years of data... before recommending her next 
+treatment.
+
+[VISUAL: Clock ticking, transition to MedVision AI logo]
+
+Today, we show you how MedVision AI gives Dr. Chen those eight years of context 
+in eight seconds."
+
+
+--------------------------------------------------------------------------------
+SCENE 2: THE CLINICAL TIME MACHINE (0:30 - 1:30)
+--------------------------------------------------------------------------------
+
+[VISUAL: Open MedVision AI dashboard, click on Sarah's patient card]
+
+NARRATOR:
+"This is MedVision AI. A clinical time machine powered by Gemini 3's 
+unprecedented two million token context window.
+
+[VISUAL: Click to load patient, show loading animation with token counter]
+
+Watch this counter. We're loading Sarah's complete eight-year history into 
+Gemini 3's memory. Every scan. Every lab. Every clinical note.
+
+[VISUAL: Token counter rapidly increasing to 1.2M tokens]
+
+One point two million tokens. That's her entire health journey in a single 
+AI context. No other model on Earth can do this.
+
+[VISUAL: Timeline appears with all events]
+
+And now, instant access to everything. Want to see her tumor progression? 
+Here it is. Lab trends over five years? One click. Treatment responses? 
+All connected.
+
+[VISUAL: Click through different timeline views]
+
+Dr. Chen used to spend forty-five minutes piecing this together. Now? Eight 
+seconds.
+
+[VISUAL: AI summary appears with key findings highlighted]
+
+The AI has already flagged what matters: CA 15-3 tumor marker trending up 
+thirty percent over six months. Bone metastases stable. Current treatment 
+showing signs of resistance.
+
+This isn't just data. This is understanding."
+
+
+--------------------------------------------------------------------------------
+SCENE 3: PREDICTIVE TRAJECTORY (1:30 - 2:15)
+--------------------------------------------------------------------------------
+
+[VISUAL: Click "Predict Trajectory" button]
+
+NARRATOR:
+"But MedVision AI doesn't just look backward. It looks forward.
+
+[VISUAL: AI thinking animation, then trajectory chart appears]
+
+Based on Sarah's complete history and outcomes from thousands of similar 
+patients, we can predict what's likely to happen next.
+
+[VISUAL: Show treatment comparison with probability percentages]
+
+Treatment Option A: Letrozole plus Palbociclib continuation.
+Sixty-two percent probability of continued stable disease for twelve to 
+eighteen months.
+
+Treatment Option B: Switch to Fulvestrant plus Abemaciclib.
+Seventy-eight percent probability of response, based on her BRCA2 status 
+and prior treatment patterns.
+
+[VISUAL: Expand reasoning section]
+
+And here's the key: complete transparency. You can see exactly why the AI 
+made this prediction. Every factor. Every data point. Every citation.
+
+This isn't a black box. It's an evidence-based reasoning engine."
+
+
+--------------------------------------------------------------------------------
+SCENE 4: PATIENT UNDERSTANDING (2:15 - 2:45)
+--------------------------------------------------------------------------------
+
+[VISUAL: Switch to patient portal view]
+
+NARRATOR:
+"But we're not just helping doctors. We're empowering patients.
+
+[VISUAL: Upload a lab report PDF, show processing animation]
+
+Sarah can upload her own lab results. And instead of confusing numbers and 
+medical jargon...
+
+[VISUAL: Show simplified interpretation with color-coded values]
+
+She sees this. Her hemoglobin is normal. Her blood sugar needs attention. 
+Plain language. Color-coded. With clear next steps.
+
+[VISUAL: Click on a medical term to show definition popup]
+
+Click any term she doesn't understand. Instant explanation at her level.
+
+[VISUAL: Show "Ask AI" chat]
+
+And if she still has questions? Ask the AI. The same AI that understands 
+her complete eight-year journey.
+
+For the first time, Sarah can understand her own health story."
+
+
+--------------------------------------------------------------------------------
+SCENE 5: THE CLOSE (2:45 - 3:00)
+--------------------------------------------------------------------------------
+
+[VISUAL: Split screen - doctor view and patient view side by side]
+
+NARRATOR:
+"MedVision AI. 
+
+For doctors: decades of patient context in seconds.
+
+For patients: clarity about their own bodies.
+
+[VISUAL: Fade to single screen with Gemini 3 logo and MedVision AI logo together]
+
+Built on Gemini 3's two million token context - because this is what 
+healthcare looks like when AI can finally remember everything.
+
+[VISUAL: Final logo with tagline]
+
+MedVision AI. Every minute saved is a life that could be changed."
+
+
+================================================================================
+                           END OF SCRIPT
+================================================================================
+
+
+--------------------------------------------------------------------------------
+RECORDING NOTES
+--------------------------------------------------------------------------------
+
+VOICE STYLE:
+- Professional but warm
+- Measured pace, not rushed
+- Emphasize key numbers (eight years, two million tokens, eight seconds)
+- Slight pause before revealing solutions
+
+KEY EMPHASIS POINTS:
+1. "Two million tokens" - say it clearly, it's your differentiator
+2. "Eight seconds" vs "forty-five minutes" - the contrast is powerful
+3. "No other model on Earth" - confident, not arrogant
+4. "Plain language" - warm, empathetic tone for patient section
+
+VISUAL TRANSITIONS:
+- Use smooth animations, nothing jarring
+- Token counter should be prominent and impressive
+- Color coding should pop on screen
+- Patient/doctor split screen is the emotional peak
+
+TIMING CHECKPOINTS:
+- 0:30 - Must finish intro, starting dashboard demo
+- 1:30 - Must finish timeline, starting predictions
+- 2:15 - Must finish predictions, starting patient portal
+- 2:45 - Must start closing
+- 3:00 - Complete (DO NOT exceed)
+
+
+--------------------------------------------------------------------------------
+BACKUP TALKING POINTS (For Judge Q&A)
+--------------------------------------------------------------------------------
+
+Q: How do you handle liability?
+A: "We position as decision support with full transparency. The AI shows its 
+   reasoning, cites sources, and the physician makes the final call. Every 
+   output is marked as AI-assisted, never AI-diagnosed."
+
+Q: What about data privacy?
+A: "HIPAA-ready architecture. Data can stay on-premise. Anonymization before 
+   AI processing. We never train on patient data."
+
+Q: Why Gemini 3 specifically?
+A: "Context window. Two million tokens means we can hold a decade of patient 
+   history in a single inference. GPT-4 maxes at 128K, Claude at 200K. This 
+   simply cannot exist with any other model."
+
+Q: How is this different from existing tools?
+A: "Existing tools analyze snapshots. We analyze the complete movie. 
+   Longitudinal pattern recognition across years of data is our moat."
+
+Q: What's the business model?
+A: "SaaS per-physician licensing for hospitals. Freemium patient portal with 
+   premium features. Research partnerships for anonymized insights."
+
+Q: Can this work in rural areas?
+A: "Cloud-based, works on any browser with internet. Minimal infrastructure. 
+   Designed to bring specialist-level insights to underserved communities."
+
+
+================================================================================
+                              END OF DOCUMENT
+================================================================================

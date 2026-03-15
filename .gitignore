@@ -52,3 +52,21 @@ serviceAccountKey.json
 
 # PDFs (keep markdown for version control)
 *.pdf
+
+# Databases
+*.db
+*.sqlite3
+
+# User uploads and runtime data
+backend/data/uploads/
+backend/app/data/patient_reports/files/
+
+# Demo and deployment docs
+demo-data/
+Deployment_Guide/
+
+# TypeScript build info
+tsconfig.tsbuildinfo
+
+# Package lock
+package-lock.json
