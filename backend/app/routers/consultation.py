@@ -224,7 +224,7 @@ async def finish_consultation(
         # Update consultation
         db.update_consultation(consultation_id, {
             'status': ConsultationStatus.COMPLETED.value,
-            'ended_at': datetime.utcnow()
+            'ended_at': datetime.utcnow().isoformat()
         })
         
         # Update doctor notes with final diagnosis
@@ -239,7 +239,7 @@ async def finish_consultation(
         appointment_id = consultation.get('appointment_id')
         db.update_appointment(appointment_id, {
             'status': 'completed',
-            'consultation_ended_at': datetime.utcnow(),
+            'consultation_ended_at': datetime.utcnow().isoformat(),
             'notes': request.treatment_summary
         })
         
@@ -820,7 +820,7 @@ async def get_queue_position(appointment_id: str):
             doctor_unavailable_until=unavailability.get('end_time') if unavailability else None,
             unavailability_reason=unavailability.get('reason') if unavailability else None,
             # Consultation specific status
-            consultation_status=consultation.get('status') if consultation else None,
+            consultation_status=str(consultation.get('status')) if consultation and consultation.get('status') else None,
             meet_link=consultation.get('meet_link') if consultation else None
         )
         

@@ -365,7 +365,7 @@ async def get_doctor_appointments_today(doctor_id: str, date: Optional[str] = No
         print(f"DEBUG: Found {len(appointments) if appointments else 0} appointments from firebase")
         
         # Also fetch any "stuck" IN_PROGRESS appointments from previous days
-        stuck_appointments = firebase.get_appointments_by_doctor_status(doctor_id, AppointmentStatus.IN_PROGRESS)
+        stuck_appointments = firebase.get_appointments_by_doctor_status(doctor_id, AppointmentStatus.IN_PROGRESS.value)
         
         # Merge stuck appointments if they aren't already in the list
         existing_ids = {a.get("id") for a in appointments}
@@ -460,6 +460,8 @@ async def get_doctor_appointments_today(doctor_id: str, date: Optional[str] = No
             }
         }
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 

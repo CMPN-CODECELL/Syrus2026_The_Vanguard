@@ -4,6 +4,7 @@ Real Firestore database operations for MedVision AI.
 """
 import os
 import json
+import uuid
 from typing import Optional, Dict, List
 from datetime import datetime
 from pathlib import Path
@@ -745,6 +746,327 @@ class FirebaseService:
             results.append(data)
         
         return results
+
+    def get_patient_profile_by_appointment(self, appointment_id: str) -> Optional[dict]:
+        """Get patient profile by appointment ID."""
+        if not self.is_connected:
+            return None
+        docs = self._db.collection("patient_profiles")\
+            .where("appointment_id", "==", appointment_id).limit(1).stream()
+        for doc in docs:
+            return doc.to_dict()
+        return None
+
+    def get_patient_profile_by_patient(self, patient_id: str) -> Optional[dict]:
+        """Get patient profile by patient ID."""
+        if not self.is_connected:
+            return None
+        docs = self._db.collection("patient_profiles")\
+            .where("patient_id", "==", patient_id).limit(1).stream()
+        for doc in docs:
+            return doc.to_dict()
+        return None
+
+    def get_accepting_doctors(self) -> List[dict]:
+        """Get doctors currently accepting appointments."""
+        if not self.is_connected:
+            return []
+        docs = self._db.collection("doctor_settings")\
+            .where("accepting_appointments_today", "==", True).stream()
+        results = []
+        for doc in docs:
+            data = doc.to_dict()
+            doctor = self.get_doctor_by_id(data.get("doctor_id", ""))
+            if doctor:
+                results.append(doctor)
+        return results
+
+    def get_patient_reputation(self, patient_id: str) -> Optional[dict]:
+        """Get patient reputation."""
+        if not self.is_connected:
+            return None
+        doc_ref = self._db.collection("patient_reputations").document(patient_id)
+        doc = doc_ref.get()
+        return doc.to_dict() if doc.exists else None
+
+    # ===========================================
+    # CONSULTATION OPERATIONS
+    # ===========================================
+
+    def _serialize_dict(self, data: dict) -> dict:
+        """Convert datetime objects to ISO strings for Firestore/JSON."""
+        result = {}
+        for k, v in data.items():
+            if hasattr(v, 'isoformat'):
+                result[k] = v.isoformat()
+            elif isinstance(v, dict):
+                result[k] = self._serialize_dict(v)
+            elif isinstance(v, list):
+                result[k] = [self._serialize_dict(i) if isinstance(i, dict) else (i.isoformat() if hasattr(i, 'isoformat') else i) for i in v]
+            elif hasattr(v, 'value'):  # Enum
+                result[k] = v.value
+            else:
+                result[k] = v
+        return result
+
+    def create_consultation(self, consultation_data: dict) -> dict:
+        """Create a consultation session in Firestore."""
+        if not self.is_connected:
+            raise ConnectionError("Firebase not connected")
+        consultation_id = consultation_data.get("id")
+        doc_ref = self._db.collection("consultations").document(consultation_id)
+        data = self._serialize_dict(consultation_data)
+        doc_ref.set(data)
+        return data  # Return serialized (JSON-safe) version
+
+    def get_consultation_by_id(self, consultation_id: str) -> Optional[dict]:
+        """Get consultation by ID."""
+        if not self.is_connected:
+            return None
+        doc_ref = self._db.collection("consultations").document(consultation_id)
+        doc = doc_ref.get()
+        return doc.to_dict() if doc.exists else None
+
+    def get_consultation_by_appointment(self, appointment_id: str) -> Optional[dict]:
+        """Get consultation by appointment ID."""
+        if not self.is_connected:
+            return None
+        docs = self._db.collection("consultations")\
+            .where("appointment_id", "==", appointment_id).limit(1).stream()
+        for doc in docs:
+            return doc.to_dict()
+        return None
+
+    def update_consultation(self, consultation_id: str, updates: dict) -> Optional[dict]:
+        """Update consultation in Firestore."""
+        if not self.is_connected:
+            return None
+        doc_ref = self._db.collection("consultations").document(consultation_id)
+        doc = doc_ref.get()
+        if not doc.exists:
+            return None
+        serialized = self._serialize_dict(updates)
+        doc_ref.update(serialized)
+        return {**doc.to_dict(), **serialized}
+
+    # ===========================================
+    # MESSAGING OPERATIONS
+    # ===========================================
+
+    def create_message(self, message_data: dict) -> dict:
+        """Create a message in Firestore."""
+        if not self.is_connected:
+            raise ConnectionError("Firebase not connected")
+        message_id = message_data.get("id")
+        doc_ref = self._db.collection("messages").document(message_id)
+        data = self._serialize_dict(message_data)
+        doc_ref.set(data)
+        return data
+
+    def get_messages_by_consultation(self, consultation_id: str) -> List[dict]:
+        """Get all messages for a consultation."""
+        if not self.is_connected:
+            return []
+        docs = self._db.collection("messages")\
+            .where("consultation_id", "==", consultation_id).stream()
+        results = [doc.to_dict() for doc in docs]
+        results.sort(key=lambda x: str(x.get("created_at", "")))
+        return results
+
+    # ===========================================
+    # DOCTOR NOTES OPERATIONS
+    # ===========================================
+
+    def create_doctor_notes(self, notes_data: dict) -> dict:
+        """Create doctor notes in Firestore."""
+        if not self.is_connected:
+            raise ConnectionError("Firebase not connected")
+        notes_id = notes_data.get("id")
+        doc_ref = self._db.collection("doctor_notes").document(notes_id)
+        data = self._serialize_dict(notes_data)
+        doc_ref.set(data)
+        return data
+
+    def get_doctor_notes_by_consultation(self, consultation_id: str) -> Optional[dict]:
+        """Get doctor notes by consultation ID."""
+        if not self.is_connected:
+            return None
+        docs = self._db.collection("doctor_notes")\
+            .where("consultation_id", "==", consultation_id).limit(1).stream()
+        for doc in docs:
+            return doc.to_dict()
+        return None
+
+    def update_doctor_notes(self, notes_id: str, updates: dict) -> Optional[dict]:
+        """Update doctor notes in Firestore."""
+        if not self.is_connected:
+            return None
+        doc_ref = self._db.collection("doctor_notes").document(notes_id)
+        doc = doc_ref.get()
+        if not doc.exists:
+            return None
+        serialized = self._serialize_dict(updates)
+        doc_ref.update(serialized)
+        return {**doc.to_dict(), **serialized}
+
+    # ===========================================
+    # PRESCRIPTION OPERATIONS
+    # ===========================================
+
+    def create_prescription(self, prescription_data: dict) -> dict:
+        """Create a prescription in Firestore."""
+        if not self.is_connected:
+            raise ConnectionError("Firebase not connected")
+        prescription_id = prescription_data.get("id")
+        doc_ref = self._db.collection("prescriptions").document(prescription_id)
+        data = self._serialize_dict(prescription_data)
+        doc_ref.set(data)
+        return data
+
+    def get_prescription_by_id(self, prescription_id: str) -> Optional[dict]:
+        """Get prescription by ID."""
+        if not self.is_connected:
+            return None
+        doc_ref = self._db.collection("prescriptions").document(prescription_id)
+        doc = doc_ref.get()
+        return doc.to_dict() if doc.exists else None
+
+    def get_prescriptions_by_patient(self, patient_id: str) -> List[dict]:
+        """Get all prescriptions for a patient."""
+        if not self.is_connected:
+            return []
+        docs = self._db.collection("prescriptions")\
+            .where("patient_id", "==", patient_id).stream()
+        return [doc.to_dict() for doc in docs]
+
+    def get_prescriptions_by_consultation(self, consultation_id: str) -> List[dict]:
+        """Get all prescriptions for a consultation."""
+        if not self.is_connected:
+            return []
+        docs = self._db.collection("prescriptions")\
+            .where("consultation_id", "==", consultation_id).stream()
+        return [doc.to_dict() for doc in docs]
+
+    # ===========================================
+    # AI ANALYSIS OPERATIONS
+    # ===========================================
+
+    def create_ai_analysis(self, analysis_data: dict) -> dict:
+        """Create AI analysis in Firestore."""
+        if not self.is_connected:
+            raise ConnectionError("Firebase not connected")
+        analysis_id = analysis_data.get("id", f"analysis_{uuid.uuid4().hex[:16]}")
+        doc_ref = self._db.collection("ai_analyses").document(analysis_id)
+        data = self._serialize_dict(analysis_data)
+        doc_ref.set(data)
+        return data
+
+    def get_ai_analysis_by_consultation(self, consultation_id: str) -> Optional[dict]:
+        """Get AI analysis by consultation ID."""
+        if not self.is_connected:
+            return None
+        docs = self._db.collection("ai_analyses")\
+            .where("consultation_id", "==", consultation_id).limit(1).stream()
+        for doc in docs:
+            return doc.to_dict()
+        return None
+
+    # ===========================================
+    # AI CHAT OPERATIONS
+    # ===========================================
+
+    def create_ai_chat(self, chat_data: dict) -> dict:
+        """Create AI chat session in Firestore."""
+        if not self.is_connected:
+            raise ConnectionError("Firebase not connected")
+        chat_id = chat_data.get("id", f"chat_{uuid.uuid4().hex[:16]}")
+        doc_ref = self._db.collection("ai_chats").document(chat_id)
+        data = self._serialize_dict(chat_data)
+        doc_ref.set(data)
+        return data
+
+    def get_ai_chat_by_consultation(self, consultation_id: str) -> Optional[dict]:
+        """Get AI chat by consultation ID."""
+        if not self.is_connected:
+            return None
+        docs = self._db.collection("ai_chats")\
+            .where("consultation_id", "==", consultation_id).limit(1).stream()
+        for doc in docs:
+            return doc.to_dict()
+        return None
+
+    def update_ai_chat(self, chat_id: str, updates: dict) -> Optional[dict]:
+        """Update AI chat in Firestore."""
+        if not self.is_connected:
+            return None
+        doc_ref = self._db.collection("ai_chats").document(chat_id)
+        doc = doc_ref.get()
+        if not doc.exists:
+            return None
+        serialized = self._serialize_dict(updates)
+        doc_ref.update(serialized)
+        return {**doc.to_dict(), **serialized}
+
+    # ===========================================
+    # DOCTOR UNAVAILABILITY OPERATIONS
+    # ===========================================
+
+    def create_unavailability(self, unavailability_data: dict) -> dict:
+        """Create doctor unavailability record."""
+        if not self.is_connected:
+            raise ConnectionError("Firebase not connected")
+        uid = unavailability_data.get("id", f"unavail_{uuid.uuid4().hex[:16]}")
+        doc_ref = self._db.collection("doctor_unavailability").document(uid)
+        data = self._serialize_dict(unavailability_data)
+        doc_ref.set(data)
+        return data
+
+    def get_current_unavailability(self, doctor_id: str) -> Optional[dict]:
+        """Get current unavailability for a doctor."""
+        if not self.is_connected:
+            return None
+        now = datetime.utcnow().isoformat()
+        docs = self._db.collection("doctor_unavailability")\
+            .where("doctor_id", "==", doctor_id).stream()
+        for doc in docs:
+            data = doc.to_dict()
+            end_time = data.get("end_time", "")
+            if end_time and str(end_time) > now:
+                return data
+        return None
+
+    # ===========================================
+    # AUDIT LOG OPERATIONS
+    # ===========================================
+
+    def create_audit_log(self, log_data: dict) -> dict:
+        """Create audit log entry in Firestore."""
+        if not self.is_connected:
+            return log_data
+        log_id = log_data.get("id", f"log_{uuid.uuid4().hex[:16]}")
+        doc_ref = self._db.collection("audit_logs").document(log_id)
+        data = self._serialize_dict(log_data)
+        doc_ref.set(data)
+        return data
+
+    def get_patient_history(self, patient_id: str) -> Optional[dict]:
+        """Get patient history for AI analysis."""
+        if not self.is_connected:
+            return None
+        # Aggregate appointments and profiles
+        appointments = self.get_appointments_by_patient(patient_id)
+        profile = self.get_patient_profile_by_patient(patient_id)
+        return {"appointments": appointments, "profile": profile}
+
+    def get_scan(self, scan_id: str) -> Optional[dict]:
+        """Get a scan by ID."""
+        if not self.is_connected:
+            return None
+        doc_ref = self._db.collection("scans").document(scan_id)
+        doc = doc_ref.get()
+        return doc.to_dict() if doc.exists else None
+
+
 
 # ===========================================
 # HARDCODED DEMO DATA (fallback)
