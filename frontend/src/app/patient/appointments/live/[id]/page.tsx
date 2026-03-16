@@ -89,18 +89,14 @@ export default function LiveQueuePage() {
         if (queuePosition) {
             // Check if consultation started
             if (queuePosition.consultation_status === 'in_progress') {
-                if (!consultationStarted) { // Only trigger once on state change
+                if (!consultationStarted) {
                     setConsultationStarted(true)
-                    // Auto-open if configured link exists (might be blocked by popup blocker, but we try)
-                    // User requested auto-direct.
-                    if (queuePosition.meet_link) {
-                        try {
-                            // We can't always auto-open, but we can set state to show big button
-                            console.log("Consultation started, ready to join")
-                        } catch (e) { }
-                    }
+                    console.log("Consultation started")
                 }
-                if (!showWaitingRoom) setShowWaitingRoom(true) // Auto-open waiting room overlay as fallback
+                // Only auto-open waiting room overlay for online appointments
+                if (appointment?.mode === 'online' && !showWaitingRoom) {
+                    setShowWaitingRoom(true)
+                }
             }
 
             // Check if it's your turn
@@ -275,7 +271,7 @@ export default function LiveQueuePage() {
 
                     {/* Join/Waiting Room Button */}
                     <div className="flex flex-col items-end gap-2">
-                        {appointment?.mode === 'online' && (
+                        {appointment?.mode === 'online' ? (
                             <>
                                 {queuePosition?.consultation_status === 'in_progress' ? (
                                     <button
@@ -299,13 +295,23 @@ export default function LiveQueuePage() {
                                         {getPositionAhead() <= 10 ? 'Enter Waiting Room' : `Wait for your turn (${getPositionAhead()} ahead)`}
                                     </button>
                                 )}
+                                {getPositionAhead() <= 10 && queuePosition?.consultation_status !== 'in_progress' && (
+                                    <p className="text-xs text-slate-500">You can enter the waiting room now.</p>
+                                )}
                             </>
+                        ) : (
+                            /* In-person: show status badge only */
+                            <div className={`px-4 py-2 rounded-xl font-semibold text-sm ${
+                                queuePosition?.consultation_status === 'in_progress'
+                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700'
+                                    : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                            }`}>
+                                {queuePosition?.consultation_status === 'in_progress'
+                                    ? '🏥 Please proceed to consultation room'
+                                    : `Queue position: ${getPositionAhead() === 0 ? 'You are next!' : `${getPositionAhead()} ahead`}`}
+                            </div>
                         )}
-                        {getPositionAhead() <= 10 && queuePosition?.consultation_status !== 'in_progress' && (
-                            <p className="text-xs text-slate-500">
-                                You can enter the waiting room now.
-                            </p>
-                        )}
+                    </div>
                     </div>
                 </div>
             </div>
@@ -321,32 +327,53 @@ export default function LiveQueuePage() {
                     >
                         <div className="bg-white dark:bg-[#1a2230] rounded-2xl max-w-lg w-full p-8 text-center shadow-2xl border border-slate-700">
                             {consultationStarted ? (
-                                <>
-                                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-                                        <Video className="w-10 h-10 text-green-600" />
-                                    </div>
-                                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                                        Consultation Started!
-                                    </h2>
-                                    <p className="text-slate-600 dark:text-slate-400 mb-8 text-lg">
-                                        The doctor has started the session. Please join immediately.
-                                    </p>
-
-                                    {queuePosition?.meet_link ? (
-                                        <a
-                                            href={queuePosition.meet_link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block w-full py-4 bg-green-600 text-white font-bold text-xl rounded-xl hover:bg-green-700 transition-all shadow-lg hover:shadow-green-500/30"
-                                        >
-                                            Join Video Call Now
-                                        </a>
-                                    ) : (
-                                        <div className="p-4 bg-red-50 text-red-600 rounded-xl">
-                                            Error: Meeting link missing. Please contact clinic.
+                                appointment?.mode === 'online' ? (
+                                    /* Online: show video call UI */
+                                    <>
+                                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                                            <Video className="w-10 h-10 text-green-600" />
                                         </div>
-                                    )}
-                                </>
+                                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                                            Consultation Started!
+                                        </h2>
+                                        <p className="text-slate-600 dark:text-slate-400 mb-8 text-lg">
+                                            The doctor has started the session. Please join immediately.
+                                        </p>
+                                        {queuePosition?.meet_link ? (
+                                            <a
+                                                href={queuePosition.meet_link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="block w-full py-4 bg-green-600 text-white font-bold text-xl rounded-xl hover:bg-green-700 transition-all shadow-lg hover:shadow-green-500/30"
+                                            >
+                                                Join Video Call Now
+                                            </a>
+                                        ) : (
+                                            <div className="p-4 bg-red-50 text-red-600 rounded-xl">
+                                                Error: Meeting link missing. Please contact clinic.
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    /* In-person: show proceed to room UI */
+                                    <>
+                                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                                            <CheckCircle className="w-10 h-10 text-green-600" />
+                                        </div>
+                                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                                            In-Person Consultation is in Progress
+                                        </h2>
+                                        <p className="text-slate-600 dark:text-slate-400 mb-8 text-lg">
+                                            The doctor is ready for you. Please proceed to the consultation room.
+                                        </p>
+                                        <button
+                                            onClick={() => setShowWaitingRoom(false)}
+                                            className="block w-full py-4 bg-green-600 text-white font-bold text-xl rounded-xl hover:bg-green-700 transition-all"
+                                        >
+                                            Got it
+                                        </button>
+                                    </>
+                                )
                             ) : (
                                 <>
                                     <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -455,8 +482,27 @@ export default function LiveQueuePage() {
                 </motion.div>
             )}
 
+            {/* In-Person Consultation Started Card */}
+            {consultationStarted && appointment?.mode === 'offline' && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-green-50 dark:bg-green-900/20 border-2 border-green-400 dark:border-green-600 rounded-xl p-6 text-center"
+                >
+                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle className="w-9 h-9 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-green-900 dark:text-green-200 mb-2">
+                        In-Person Consultation is in Progress
+                    </h2>
+                    <p className="text-green-700 dark:text-green-400">
+                        The doctor has started your session. Please proceed to the consultation room.
+                    </p>
+                </motion.div>
+            )}
+
             {/* Your Turn Alert */}
-            {isYourTurn && (
+            {isYourTurn && !consultationStarted && (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
