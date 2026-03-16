@@ -312,7 +312,6 @@ export default function LiveQueuePage() {
                             </div>
                         )}
                     </div>
-                    </div>
                 </div>
             </div>
 
