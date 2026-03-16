@@ -58,27 +58,26 @@ export default function DoctorAppointmentsPage() {
         try {
             setLoading(true)
 
+            // Use local date to avoid timezone mismatches with server
+            const now = new Date()
+            const year = now.getFullYear()
+            const month = String(now.getMonth() + 1).padStart(2, '0')
+            const day = String(now.getDate()).padStart(2, '0')
+            const todayStr = `${year}-${month}-${day}`
+
             // Fetch today's appointments
             try {
-                // Use local date to avoid timezone mismatches with server
-                const now = new Date()
-                const year = now.getFullYear()
-                const month = String(now.getMonth() + 1).padStart(2, '0')
-                const day = String(now.getDate()).padStart(2, '0')
-                const todayStr = `${year}-${month}-${day}`
-
                 const result = await api.getDoctorAppointmentsToday(id, todayStr)
                 if (result.appointments) {
                     setAppointments(result.appointments)
                 }
             } catch {
-                // Use empty array if API fails
                 setAppointments([])
             }
 
-            // Fetch upcoming 7-day appointments
+            // Fetch upcoming 7-day appointments — pass todayStr so server generates dates in client's timezone
             try {
-                const upcomingResult = await api.getDoctorAppointmentsUpcoming(id, 7)
+                const upcomingResult = await api.getDoctorAppointmentsUpcoming(id, 7, todayStr)
                 if (upcomingResult.appointments_by_date) {
                     setUpcomingByDate(upcomingResult.appointments_by_date)
                 }

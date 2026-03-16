@@ -169,11 +169,14 @@ export default function BookAppointmentPage() {
                 setError(null)
 
                 // Get today and tomorrow dates for slot fetching
+                // Use local date parts to avoid UTC offset shifting the date (e.g. 00:11 IST = prev day UTC)
                 const today = new Date()
                 const tomorrow = new Date(today)
                 tomorrow.setDate(tomorrow.getDate() + 1)
-                const todayStr = today.toISOString().split('T')[0]
-                const tomorrowStr = tomorrow.toISOString().split('T')[0]
+                const toLocalDateStr = (d: Date) =>
+                    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                const todayStr = toLocalDateStr(today)
+                const tomorrowStr = toLocalDateStr(tomorrow)
 
                 // Get patient ID to check for existing appointment
                 const userData = localStorage.getItem('user')
@@ -553,7 +556,8 @@ export default function BookAppointmentPage() {
                                             {Array.from({ length: 7 }, (_, i) => {
                                                 const date = new Date()
                                                 date.setDate(date.getDate() + i)
-                                                const dateStr = date.toISOString().split('T')[0]
+                                                // Use local date parts — toISOString() returns UTC which can be previous day for UTC+ timezones
+                                                const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
                                                 const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
                                                 const dayNum = date.getDate()
                                                 const monthName = date.toLocaleDateString('en-US', { month: 'short' })

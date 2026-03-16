@@ -466,15 +466,25 @@ async def get_doctor_appointments_today(doctor_id: str, date: Optional[str] = No
 
 
 @router.get("/doctor/{doctor_id}/upcoming")
-async def get_doctor_appointments_upcoming(doctor_id: str, days: int = 7):
+async def get_doctor_appointments_upcoming(doctor_id: str, days: int = 7, start_date: Optional[str] = None):
     """Get all appointments for a doctor for the upcoming N days (excluding today)."""
     try:
         firebase = get_firebase_service()
         appointments_by_date = {}
-        
-        # Get appointments for each day
+
+        # Use client-provided start_date if given (avoids server timezone mismatch)
+        # start_date should be today's local date from the client
+        if start_date:
+            try:
+                base = datetime.strptime(start_date, "%Y-%m-%d")
+            except ValueError:
+                base = datetime.now()
+        else:
+            base = datetime.now()
+
+        # Get appointments for each day starting from tomorrow relative to base
         for i in range(1, days + 1):
-            date = (datetime.now() + timedelta(days=i)).strftime("%Y-%m-%d")
+            date = (base + timedelta(days=i)).strftime("%Y-%m-%d")
             day_appointments = firebase.get_appointments_by_doctor_date(doctor_id, date)
             
             if day_appointments:
