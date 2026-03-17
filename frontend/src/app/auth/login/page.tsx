@@ -177,7 +177,7 @@ function LoginContent() {
                 {/* Minimalist Role Selector */}
                 <div className="flex gap-4 mb-6 text-sm border-b border-slate-200 pb-2">
                     <button
-                        onClick={() => setRole('doctor')}
+                        onClick={() => { setRole('doctor'); setEmail(''); setPassword(''); setRegistrationNumber(''); setError(''); }}
                         className={`pb-2 -mb-2.5 transition-colors font-medium ${role === 'doctor'
                             ? 'text-primary-600 border-b-2 border-primary-600'
                             : 'text-slate-500 hover:text-slate-800'
@@ -186,7 +186,7 @@ function LoginContent() {
                         Doctor
                     </button>
                     <button
-                        onClick={() => setRole('patient')}
+                        onClick={() => { setRole('patient'); setEmail(''); setPassword(''); setRegistrationNumber(''); setError(''); }}
                         className={`pb-2 -mb-2.5 transition-colors font-medium ${role === 'patient'
                             ? 'text-primary-600 border-b-2 border-primary-600'
                             : 'text-slate-500 hover:text-slate-800'
