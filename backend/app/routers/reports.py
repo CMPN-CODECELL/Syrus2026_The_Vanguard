@@ -6,12 +6,74 @@ from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from fastapi.responses import FileResponse
 from typing import Optional, List
 from pathlib import Path
+import uuid, os, shutil
+from datetime import datetime
 from app.services.gemini_service import GeminiService
 from app.services.pdf_service import extract_text_from_pdf
 from app.services.report_storage_service import get_report_storage
 
 router = APIRouter()
 gemini = GeminiService()
+
+
+@router.post("/upload")
+async def upload_doctor_report(
+    file: UploadFile = File(...),
+    patient_id: Optional[str] = Form(None),
+    consultation_id: Optional[str] = Form(None)
+):
+    """
+    Doctor uploads a report/document for a patient during consultation.
+    Saves the file to data/uploads and records it in the consultation.
+    """
+    try:
+        upload_dir = Path("data/uploads")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+
+        file_id = str(uuid.uuid4())
+        file_ext = os.path.splitext(file.filename or "")[1].lower() or ".bin"
+        file_path = upload_dir / f"{file_id}{file_ext}"
+
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        report_entry = {
+            "id": file_id,
+            "name": file.filename or f"document{file_ext}",
+            "url": f"/api/appointments/files/{file_id}",
+            "uploaded_at": datetime.utcnow().isoformat(),
+            "uploaded_by": "doctor"
+        }
+
+        # Persist to consultation document in Firebase
+        if consultation_id:
+            try:
+                from app.services.firebase_service import get_firebase_service
+                firebase = get_firebase_service()
+                consultation = firebase.get_consultation_by_id(consultation_id)
+                existing = consultation.get("doctor_reports", []) if consultation else []
+                existing.append(report_entry)
+                firebase.update_consultation(consultation_id, {"doctor_reports": existing})
+            except Exception as e:
+                print(f"[ReportUpload] Warning: could not persist to Firebase: {e}")
+
+        return {"success": True, **report_entry}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/consultation/{consultation_id}")
+async def get_consultation_reports(consultation_id: str):
+    """Get all doctor-uploaded reports for a consultation."""
+    try:
+        from app.services.firebase_service import get_firebase_service
+        firebase = get_firebase_service()
+        consultation = firebase.get_consultation_by_id(consultation_id)
+        if not consultation:
+            return {"reports": []}
+        return {"reports": consultation.get("doctor_reports", [])}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/upload-and-interpret")

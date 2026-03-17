@@ -648,6 +648,7 @@ async def get_prescription_by_appointment(appointment_id: str):
             'doctor_notes': notes,
             'appointment': appointment,
             'consultation': consultation,
+            'consultation_id': consultation.get('id'),
             'ai_analysis': ai_analysis,
             'patient_profile': patient_profile,
             'past_consultations': past_consultations,

@@ -69,9 +69,10 @@ async def download_file(file_id: str):
         for file_path in upload_dir.glob(f"{file_id}.*"):
             if file_path.exists():
                 from fastapi.responses import FileResponse
+                # Use the actual filename stored on disk (preserves extension)
                 return FileResponse(
-                    path=file_path, 
-                    filename=f"medical_document{file_path.suffix}",
+                    path=file_path,
+                    filename=file_path.name,
                     media_type='application/octet-stream'
                 )
         raise HTTPException(status_code=404, detail="File not found")
