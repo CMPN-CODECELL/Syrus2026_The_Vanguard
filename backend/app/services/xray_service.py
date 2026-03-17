@@ -1,14 +1,14 @@
 """
 X-Ray Analysis Service
-Uses Gemini Vision API to analyse chest X-ray images and return structured findings.
+Uses Gemini Vision (via SDK) to analyse chest X-ray images and return structured findings.
 """
-import base64
 import json
 import logging
 import re
-from typing import Optional
 
-import requests
+import google.generativeai as genai
+from PIL import Image
+import io
 
 from app.config import settings
 
@@ -41,10 +41,13 @@ Rules:
 class XRayService:
     def __init__(self):
         self.api_key = settings.gemini_api_key
-        self.url = (
-            "https://generativelanguage.googleapis.com/v1beta/models/"
-            "gemini-1.5-flash:generateContent"
-        )
+        self._model = None
+
+    def _get_model(self):
+        if self._model is None:
+            genai.configure(api_key=self.api_key)
+            self._model = genai.GenerativeModel("gemini-2.5-flash")
+        return self._model
 
     def analyse_image(self, image_bytes: bytes) -> dict:
         """
@@ -56,35 +59,11 @@ class XRayService:
             return {"success": False, "error": "API key not configured"}
 
         try:
-            image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+            image = Image.open(io.BytesIO(image_bytes))
+            model = self._get_model()
+            response = model.generate_content([XRAY_PROMPT, image])
+            raw_text = response.text.strip()
 
-            payload = {
-                "contents": [
-                    {
-                        "parts": [
-                            {"text": XRAY_PROMPT},
-                            {
-                                "inline_data": {
-                                    "mime_type": "image/jpeg",
-                                    "data": image_b64,
-                                }
-                            },
-                        ]
-                    }
-                ],
-                "generationConfig": {"temperature": 0, "maxOutputTokens": 1024},
-            }
-
-            response = requests.post(
-                f"{self.url}?key={self.api_key}",
-                json=payload,
-                timeout=30,
-            )
-            response.raise_for_status()
-
-            raw_text = (
-                response.json()["candidates"][0]["content"]["parts"][0]["text"]
-            )
             # Strip markdown fences if present
             raw_text = re.sub(r"```(?:json)?", "", raw_text).strip().strip("`").strip()
 
@@ -100,6 +79,23 @@ class XRayService:
         except Exception as e:
             logger.error("X-ray service error: %s", e)
             return {"success": False, "error": str(e)}
+
+    def extract_text_from_image(self, image_bytes: bytes) -> str:
+        """
+        Extract text content from an image (e.g. blood report photo) using Gemini Vision.
+        Returns extracted text or empty string on failure.
+        """
+        if not self.api_key:
+            return ""
+        try:
+            image = Image.open(io.BytesIO(image_bytes))
+            model = self._get_model()
+            prompt = "Extract all text from this medical report image. Return only the raw text, no commentary."
+            response = model.generate_content([prompt, image])
+            return response.text.strip()
+        except Exception as e:
+            logger.error("Image text extraction error: %s", e)
+            return ""
 
 
 # Singleton instance

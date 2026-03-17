@@ -30,6 +30,8 @@ from app.services.blood_prediction_service import (
 from app.services.pdf_service import extract_text_from_pdf
 from app.services.xray_service import xray_service
 
+IMAGE_CONTENT_TYPES = {"image/jpeg", "image/jpg", "image/png"}
+
 logger = logging.getLogger(__name__)
 
 DISCLAIMER = (
@@ -251,14 +253,19 @@ async def _run_blood_pdf_branch(
     blood_report_file: UploadFile,
     patient_age: Optional[int],
 ) -> List[dict]:
-    """Extract text from PDF, extract blood values, run predictions."""
+    """Extract text from PDF or image, extract blood values, run predictions."""
     try:
-        pdf_bytes = await blood_report_file.read()
+        file_bytes = await blood_report_file.read()
+        content_type = blood_report_file.content_type or ""
 
-        # extract_text_from_pdf is the module-level function (not the class method)
-        report_text = extract_text_from_pdf(pdf_bytes)
+        # For images, use Gemini Vision OCR; for PDFs use pdf_service
+        if content_type in IMAGE_CONTENT_TYPES:
+            report_text = xray_service.extract_text_from_image(file_bytes)
+        else:
+            report_text = extract_text_from_pdf(file_bytes)
+
         if not report_text:
-            logger.warning("PDF text extraction returned empty string.")
+            logger.warning("Blood report text extraction returned empty string.")
             return []
 
         blood_values = extract_blood_values_from_report(report_text, settings.gemini_api_key)
@@ -267,7 +274,6 @@ async def _run_blood_pdf_branch(
             return []
 
         predictions = predict_from_blood_values(blood_values, patient_age)
-        # Tag each prediction with the PDF source label
         for p in predictions:
             p["source"] = "blood_ml" if p.get("source") == "ml_model" else "blood_rule"
         return predictions
