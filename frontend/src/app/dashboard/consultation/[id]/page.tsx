@@ -12,6 +12,7 @@ import {
     Trash2, ChevronDown, ExternalLink, X, Loader2
 } from 'lucide-react'
 import { MarkdownRenderer, markdownStyles } from '@/components/MarkdownRenderer'
+import PredictionPanel from '@/components/PredictionPanel'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -58,7 +59,7 @@ interface Medication {
     frequency: string
     timing: string[]
     relation_to_food: string
-    duration_value: number | string
+    duration_value: number
     duration_unit: string
     instructions: string
 }
@@ -671,20 +672,20 @@ export default function ConsultationPage() {
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Uploaded Documents</h3>
                             {patientProfile?.uploaded_documents?.length ? (
                                 <div className="space-y-2">
-                                    {patientProfile.uploaded_documents.map((doc: any, docIdx: number) => {
-                                        const docId = typeof doc === 'string' ? doc : (doc.id || doc.file_id || '')
-                                        const docName = typeof doc === 'string' ? `Document ${docIdx + 1}` : (doc.name || doc.filename || `Document ${docIdx + 1}`)
-                                        return (
-                                        <div key={docId || docIdx} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                    {patientProfile.uploaded_documents.map((doc: any) => (
+                                        <div key={doc} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                                             <div className="flex items-center gap-3">
                                                 <FileText className="w-5 h-5 text-teal-600" />
                                                 <div>
-                                                    <p className="font-medium text-slate-900 dark:text-white">{docName}</p>
-                                                    <p className="text-xs text-slate-500 font-mono">{docId.substring(0, 8)}...</p>
+                                                    <p className="font-medium text-slate-900 dark:text-white">
+                                                        {/* Document ID is just a UUID, we don't have the original name stored easily in this view yet, using generic name or ID */}
+                                                        Medical Document
+                                                    </p>
+                                                    <p className="text-xs text-slate-500 font-mono">{typeof doc === 'string' ? doc.substring(0, 8) : doc.id?.substring(0, 8)}...</p>
                                                 </div>
                                             </div>
                                             <a
-                                                href={`${API_BASE}/api/appointments/files/${docId}`}
+                                                href={`${API_BASE}/api/appointments/files/${typeof doc === 'string' ? doc : doc.id}`}
                                                 download
                                                 target="_blank"
                                                 rel="noopener noreferrer"
@@ -693,8 +694,7 @@ export default function ConsultationPage() {
                                                 <Download className="w-5 h-5" />
                                             </a>
                                         </div>
-                                        )
-                                    })}
+                                    ))}
                                 </div>
                             ) : (
                                 <p className="text-slate-500 dark:text-slate-400">No documents uploaded</p>
@@ -921,6 +921,7 @@ export default function ConsultationPage() {
 
                 {/* AI Analysis Tab */}
                 {activeTab === 'ai' && (
+                    <>
                     <div className="grid lg:grid-cols-2 gap-6">
                         {/* Analysis Panel */}
                         <div className="space-y-4">
@@ -1031,8 +1032,7 @@ export default function ConsultationPage() {
                         </div>
 
                         {/* AI Chat Panel */}
-                        <div className="flex flex-col bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-                            <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                        <div className="flex flex-col bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">                            <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                                 <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     <MessageSquare className="w-4 h-4 text-purple-600" />
                                     AI Assistant Chat
@@ -1093,6 +1093,18 @@ export default function ConsultationPage() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Disease Prediction Panel */}
+                    <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-6">
+                        <div className="mb-4">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Disease Prediction</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                Upload clinical inputs to get AI-ranked disease predictions — Token #{appointment?.queue_number || '?'}
+                            </p>
+                        </div>
+                        <PredictionPanel patientAge={patientProfile?.basic_info?.age ?? undefined} />
+                    </div>
+                    </>
                 )}
 
                 {/* Prescription Tab */}
@@ -1148,8 +1160,8 @@ export default function ConsultationPage() {
                                         <input
                                             type="number"
                                             placeholder="Duration"
-                                            value={med.duration_value ?? ''}
-                                            onChange={(e) => updateMedication(index, 'duration_value', e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
+                                            value={med.duration_value}
+                                            onChange={(e) => updateMedication(index, 'duration_value', parseInt(e.target.value))}
                                             className="w-20 px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg"
                                         />
                                         <select

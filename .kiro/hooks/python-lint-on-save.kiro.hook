@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "Python Lint on Save",
+  "description": "On save of any file in backend/app/services/ or backend/app/routers/, checks for syntax errors via py_compile and warns if any new function is missing a docstring",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "backend/app/services/*.py",
+      "backend/app/routers/*.py"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A Python file in backend/app/services/ or backend/app/routers/ was just saved: ${file}\n\nRun these two checks and report results clearly in the Kiro panel:\n\n1. SYNTAX CHECK — run: `backend/venv/Scripts/python.exe -m py_compile \"${file}\"`\n   - If it exits non-zero, show the compiler error as a WARNING and stop.\n\n2. DOCSTRING CHECK — parse the file and find every `def` or `async def` that has no docstring immediately after its signature (i.e. the first statement in the body is not a string literal).\n   - List every offending function name as a WARNING.\n\nIf both checks pass, show a single \"✓ ${file} — syntax OK, all functions documented\" message.\nDo not modify any files. Only report findings."
+  }
+}

@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 from app.config import settings
-from app.routers import patients, analysis, reports, chat, auth, social, appointments, consultation, library
+from app.routers import patients, analysis, reports, chat, auth, social, appointments, consultation, library, prediction
 from app.routers import settings as settings_router
 
 # Configure logging
@@ -62,6 +62,7 @@ app.include_router(appointments.router, tags=["Appointments"])
 app.include_router(consultation.router, tags=["Consultation"])
 app.include_router(settings_router.router, tags=["Doctor Settings"])
 app.include_router(library.router, prefix="/api/library", tags=["Medical Library"])
+app.include_router(prediction.router, tags=["Prediction"])
 
 
 @app.get("/", tags=["Health"])
