@@ -236,8 +236,8 @@ export default function PredictionPanel({ patientAge }: PredictionPanelProps = {
         />
         <FileSlot
           label="Blood Report PDF"
-          description="JPG, JPEG, PNG or PDF up to 5 MB"
-          accept="image/jpeg,image/jpg,image/png,application/pdf"
+          description="PDF only, up to 5 MB"
+          accept="application/pdf"
           icon={<FileText className="h-6 w-6 text-gray-400" />}
           file={bloodFile}
           onFile={setBloodFile}

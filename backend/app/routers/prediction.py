@@ -204,11 +204,11 @@ def _validate_inputs(
 
     # Validate blood report file type.
     if blood_report_file is not None:
-        allowed_files = {"image/jpeg", "image/jpg", "image/png", "application/pdf"}
+        allowed_files = {"application/pdf"}
         if blood_report_file.content_type not in allowed_files:
             raise HTTPException(
                 status_code=422,
-                detail=f"blood_report_file must be an image (JPEG/PNG) or PDF, got '{blood_report_file.content_type}'.",
+                detail=f"blood_report_file must be a PDF, got '{blood_report_file.content_type}'.",
             )
 
     # Validate patient age range.
