@@ -297,14 +297,14 @@ export default function BookAppointmentPage() {
                 return
             }
 
-            // Upload documents first
-            const uploadedDocIds: string[] = []
+            // Upload documents first — store {id, name} objects so filename is preserved
+            const uploadedDocIds: { id: string; name: string }[] = []
             if (documents.length > 0) {
                 for (const doc of documents) {
                     try {
                         const res = await api.uploadDocument(doc.file)
                         if (res.success && res.id) {
-                            uploadedDocIds.push(res.id)
+                            uploadedDocIds.push({ id: res.id, name: doc.name || res.name || 'Document' })
                         }
                     } catch (e) {
                         console.error('Failed to upload document:', doc.name, e)

@@ -618,30 +618,30 @@ async def get_prescription_by_appointment(appointment_id: str):
         # Get AI Analysis
         ai_analysis = db.get_ai_analysis_by_consultation(consultation.get('id'))
 
-        # Get all past consultations for this doctor-patient pair (history)
+        # Get all past appointments for this doctor-patient pair (history)
+        # Use appointments (not just consultations) so offline/no-consultation records also appear
         past_consultations = []
         if appointment:
             doctor_id = appointment.get('doctor_id')
             patient_id = appointment.get('patient_id')
             if doctor_id and patient_id:
-                all_consultations = db.get_consultations_by_doctor_patient(doctor_id, patient_id)
-                for c in all_consultations:
-                    if c.get('id') == consultation.get('id'):
+                all_apts = db.get_all_appointments_by_doctor(doctor_id)
+                for apt in all_apts:
+                    if apt.get('id') == appointment_id:
                         continue  # skip current
-                    past_apt = db.get_appointment_by_id(c.get('appointment_id'))
-                    if past_apt:
-                        past_consultations.append({
-                            'appointment_id': c.get('appointment_id'),
-                            'consultation_id': c.get('id'),
-                            'scheduled_time': past_apt.get('scheduled_time'),
-                            'queue_date': past_apt.get('queue_date'),
-                            'status': past_apt.get('status'),
-                            'mode': past_apt.get('mode'),
-                            'chief_complaint': past_apt.get('chief_complaint'),
-                            'patient_name': past_apt.get('patient_name'),
-                        })
-                # Sort by scheduled_time descending
-                past_consultations.sort(key=lambda x: str(x.get('scheduled_time', '')), reverse=True)
+                    if apt.get('patient_id') != patient_id:
+                        continue  # different patient
+                    past_consultations.append({
+                        'appointment_id': apt.get('id'),
+                        'scheduled_time': apt.get('scheduled_time'),
+                        'queue_date': apt.get('queue_date'),
+                        'status': apt.get('status'),
+                        'mode': apt.get('mode'),
+                        'chief_complaint': apt.get('chief_complaint'),
+                        'patient_name': apt.get('patient_name'),
+                    })
+                # Sort by scheduled_time descending (most recent first)
+                past_consultations.sort(key=lambda x: str(x.get('scheduled_time') or x.get('queue_date', '')), reverse=True)
 
         return {
             'prescription': prescriptions[0] if prescriptions else None,
