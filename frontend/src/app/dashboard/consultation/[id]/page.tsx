@@ -12,6 +12,7 @@ import {
     Trash2, ChevronDown, ExternalLink, X, Loader2
 } from 'lucide-react'
 import { MarkdownRenderer, markdownStyles } from '@/components/MarkdownRenderer'
+import PredictionPanel from '@/components/PredictionPanel'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -921,6 +922,7 @@ export default function ConsultationPage() {
 
                 {/* AI Analysis Tab */}
                 {activeTab === 'ai' && (
+                    <>
                     <div className="grid lg:grid-cols-2 gap-6">
                         {/* Analysis Panel */}
                         <div className="space-y-4">
@@ -1093,6 +1095,18 @@ export default function ConsultationPage() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Disease Prediction Panel */}
+                    <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-6">
+                        <div className="mb-4">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Disease Prediction</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                Upload clinical inputs to get AI-ranked disease predictions — Token #{appointment?.queue_number || '?'}
+                            </p>
+                        </div>
+                        <PredictionPanel patientAge={patientProfile?.basic_info?.age ?? undefined} />
+                    </div>
+                    </>
                 )}
 
                 {/* Prescription Tab */}
