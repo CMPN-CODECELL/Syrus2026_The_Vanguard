@@ -20,6 +20,9 @@ function toIST(val: string | undefined): { date: string; time: string } {
         timeZone: 'Asia/Kolkata',
         day: 'numeric', month: 'short', year: 'numeric'
     })
+    // Check if time is a queue-based placeholder (09:00 or 00:00 IST)
+    const h24 = d.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false })
+    if (h24 === '09:00' || h24 === '00:00') return { date, time: '' }
     const time = d.toLocaleTimeString('en-IN', {
         timeZone: 'Asia/Kolkata',
         hour: '2-digit', minute: '2-digit', hour12: true
@@ -305,3 +308,4 @@ export default function ConsultationSummaryPage({ params }: PageProps) {
         </div>
     )
 }
+

@@ -71,6 +71,9 @@ export default function PatientRecordsPage() {
         if (!dateStr) return ''
         const d = new Date(dateStr)
         if (isNaN(d.getTime())) return ''
+        const istTime = d.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false })
+        // Only hide truly bare dates (midnight UTC = 00:00 IST offset)
+        if (istTime === '00:00') return ''
         return d.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + ' IST'
     }
 
