@@ -4,7 +4,7 @@ Models for patient-doctor appointment booking, scheduling, and queue management.
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Union
 from datetime import datetime
 from enum import Enum
 
@@ -234,7 +234,7 @@ class CreateAppointmentRequest(BaseModel):
     patient_medications: List[str] = []
     patient_symptoms_details: Optional[dict] = None
     patient_medical_history: Optional[dict] = None
-    document_ids: List[str] = []
+    document_ids: List[Union[str, dict]] = []
 
 
 class UpdateAppointmentStatusRequest(BaseModel):
