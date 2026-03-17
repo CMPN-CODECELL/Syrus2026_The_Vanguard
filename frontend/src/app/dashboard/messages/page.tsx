@@ -254,11 +254,6 @@ export default function DoctorMessagesPage() {
                                         </span>
                                     </div>
                                     <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{conv.lastMessage}</p>
-                                    {conv.status === 'completed' && (
-                                        <span className="inline-block mt-1 text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-0.5 rounded">
-                                            Completed
-                                        </span>
-                                    )}
                                 </div>
                                 {conv.unreadCount > 0 && (
                                     <span className="bg-primary-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
