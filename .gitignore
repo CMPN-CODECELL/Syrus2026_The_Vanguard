@@ -70,3 +70,7 @@ tsconfig.tsbuildinfo
 
 # Package lock
 package-lock.json
+
+# Sensitive / scratch files
+passwords.txt
+*.patch
