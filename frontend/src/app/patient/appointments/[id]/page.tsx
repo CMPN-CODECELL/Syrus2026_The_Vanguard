@@ -90,7 +90,7 @@ interface Appointment {
     queue_number?: number
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
 
 export default function AppointmentDetailPage() {
     const params = useParams()
@@ -107,6 +107,8 @@ export default function AppointmentDetailPage() {
     const [sendingMessage, setSendingMessage] = useState(false)
     const [activeTab, setActiveTab] = useState<'prescription' | 'messages'>('prescription')
     const [doctorName, setDoctorName] = useState<string>('Doctor')
+    const [doctorReports, setDoctorReports] = useState<Array<{ id: string; name: string; url: string }>>([])
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -124,7 +126,7 @@ export default function AppointmentDetailPage() {
             const token = localStorage.getItem('auth_token')
 
             // Fetch prescription data by appointment
-            const prescRes = await fetch(`${API_BASE}/api/consultation/prescription/appointment/${appointmentId}`, {
+            const prescRes = await fetch(`${apiBase}/api/consultation/prescription/appointment/${appointmentId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
 
@@ -134,19 +136,32 @@ export default function AppointmentDetailPage() {
                     setPrescription(data.prescription)
                     setDoctorNotes(data.doctor_notes)
                     setAppointment(data.appointment)
-                    setConsultationId(data.consultation?.id)
-
-                    // Try to get doctor name
-                    if (data.appointment?.doctor_id) {
-                        fetchDoctorName(data.appointment.doctor_id)
+                    // Doctor name is already enriched in the appointment object by the backend
+                    const name = data.appointment?.doctor_name
+                    if (name) setDoctorName(name)
+                    // Fetch doctor-uploaded reports
+                    const consultId = data.consultation_id || data.consultation?.id
+                    if (consultId) {
+                        setConsultationId(consultId)
+                        try {
+                            const rRes = await fetch(`${apiBase}/api/reports/consultation/${consultId}`, {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            })
+                            if (rRes.ok) {
+                                const rData = await rRes.json()
+                                setDoctorReports(rData.reports || [])
+                            }
+                        } catch { /* non-fatal */ }
                     }
                 } else if (data.appointment) {
                     setAppointment(data.appointment)
+                    const name = data.appointment?.doctor_name
+                    if (name) setDoctorName(name)
                 }
             }
 
             // Fetch messages
-            const msgRes = await fetch(`${API_BASE}/api/consultation/messages/appointment/${appointmentId}`, {
+            const msgRes = await fetch(`${apiBase}/api/consultation/messages/appointment/${appointmentId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
 
@@ -165,22 +180,6 @@ export default function AppointmentDetailPage() {
         }
     }
 
-    const fetchDoctorName = async (doctorId: string) => {
-        try {
-            const token = localStorage.getItem('auth_token')
-            const res = await fetch(`${API_BASE}/api/doctors/${doctorId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            if (res.ok) {
-                const doctor = await res.json()
-                setDoctorName(doctor.name || doctor.full_name || `Dr. ${doctorId.substring(0, 8)}`)
-            }
-        } catch {
-            // Use ID fallback
-            setDoctorName(`Dr. ${doctorId.substring(0, 8)}`)
-        }
-    }
-
     const sendMessage = async () => {
         if (!newMessage.trim()) return
 
@@ -190,7 +189,7 @@ export default function AppointmentDetailPage() {
             const userData = localStorage.getItem('user')
             const user = userData ? JSON.parse(userData) : {}
 
-            const res = await fetch(`${API_BASE}/api/consultation/messages/appointment/${appointmentId}`, {
+            const res = await fetch(`${apiBase}/api/consultation/messages/appointment/${appointmentId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -509,6 +508,34 @@ export default function AppointmentDetailPage() {
                                 Special Instructions
                             </h2>
                             <p className="text-amber-800 dark:text-amber-200">{prescription.special_instructions}</p>
+                        </div>
+                    )}
+
+                    {/* Doctor-Uploaded Reports */}
+                    {doctorReports.length > 0 && (
+                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6">
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                <FileText className="w-5 h-5 text-teal-600" />
+                                Reports from Doctor
+                            </h2>
+                            <div className="space-y-2">
+                                {doctorReports.map((doc, i) => (
+                                    <div key={i} className="flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <FileText className="w-5 h-5 text-teal-500 shrink-0" />
+                                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{doc.name || `Report ${i + 1}`}</span>
+                                        </div>
+                                        <a
+                                            href={`${apiBase}/api/appointments/files/${doc.id}`}
+                                            download={doc.name}
+                                            className="ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 rounded-lg text-xs font-semibold hover:bg-teal-200 dark:hover:bg-teal-900/60 transition-colors shrink-0"
+                                        >
+                                            <Download className="w-3.5 h-3.5" />
+                                            Download
+                                        </a>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
 
