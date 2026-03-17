@@ -877,7 +877,12 @@ class FirebaseService:
             return None
         doc_ref = self._db.collection("consultations").document(consultation_id)
         doc = doc_ref.get()
-        return doc.to_dict() if doc.exists else None
+        if not doc.exists:
+            return None
+        data = doc.to_dict()
+        if not data.get('id'):
+            data['id'] = doc.id
+        return data
 
     def get_consultation_by_appointment(self, appointment_id: str) -> Optional[dict]:
         """Get consultation by appointment ID."""
@@ -886,7 +891,11 @@ class FirebaseService:
         docs = self._db.collection("consultations")\
             .where("appointment_id", "==", appointment_id).limit(1).stream()
         for doc in docs:
-            return doc.to_dict()
+            data = doc.to_dict()
+            # Ensure the document ID is always present in the returned dict
+            if not data.get('id'):
+                data['id'] = doc.id
+            return data
         return None
 
     def update_consultation(self, consultation_id: str, updates: dict) -> Optional[dict]:
