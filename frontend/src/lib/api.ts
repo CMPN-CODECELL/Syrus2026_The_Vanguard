@@ -148,7 +148,7 @@ export const api = {
         patient_medications?: string[]
         patient_symptoms_details?: any
         patient_medical_history?: any
-        document_ids?: string[]
+        document_ids?: string[] | { id: string; name: string }[]
     }) =>
         fetchAPI<{ success: boolean; appointment_id: string; queue_number: number; message: string }>(
             '/api/appointments/',
@@ -173,7 +173,7 @@ export const api = {
         fetchAPI<{ records: any[]; total: number }>(`/api/appointments/doctor/${doctorId}/history`),
 
     getAvailableSlots: (doctorId: string, date: string) =>
-        fetchAPI<{ date: string; slots: any[]; consultation_duration: number }>(
+        fetchAPI<{ date: string; slots: any[]; consultation_duration: number; queue_count: number; next_token: number }>(
             `/api/appointments/doctors/${doctorId}/slots?date=${date}`
         ),
 

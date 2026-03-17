@@ -793,6 +793,8 @@ async def get_available_slots(doctor_id: str, date: str):
         return {
             "date": date,
             "slots": slots,
+            "queue_count": len(existing),
+            "next_token": len(existing) + 1,
             "consultation_duration": duration
         }
     except Exception as e:

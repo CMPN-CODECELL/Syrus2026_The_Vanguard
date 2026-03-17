@@ -108,6 +108,7 @@ export default function BookAppointmentPage() {
     const [doctor, setDoctor] = useState<DoctorData | null>(null)
     const [availableSlots, setAvailableSlots] = useState<Slot[]>([])
     const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
+    const [tokenByDate, setTokenByDate] = useState<Record<string, number>>({})
     const [selectedMode, setSelectedMode] = useState<'online' | 'offline'>('online')
     const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)
@@ -561,20 +562,28 @@ export default function BookAppointmentPage() {
                                                 const isTomorrow = i === 1
                                                 const isSelected = selectedSlot?.datetime?.startsWith(dateStr)
 
-                                                // Calculate queue position for this date
-                                                const queueForDate = availableSlots.filter(s => s.datetime === dateStr)
-                                                const queuePosition = queueForDate.length > 0 ? parseInt(queueForDate[0].time) : 1
+                                                // Calculate queue position for this date — removed (now fetched on click)
 
                                                 return (
                                                     <button
                                                         key={dateStr}
-                                                        onClick={() => {
+                                                        onClick={async () => {
+                                                            // Fetch real queue count for this date
+                                                            let nextToken = tokenByDate[dateStr]
+                                                            if (nextToken === undefined) {
+                                                                try {
+                                                                    const slotRes = await api.getAvailableSlots(doctorId, dateStr)
+                                                                    nextToken = slotRes.next_token ?? (slotRes.queue_count ?? 0) + 1
+                                                                    setTokenByDate(prev => ({ ...prev, [dateStr]: nextToken }))
+                                                                } catch {
+                                                                    nextToken = 1
+                                                                }
+                                                            }
                                                             // Find the first real slot for this date from the API response
                                                             const firstSlot = availableSlots.find(s => s.datetime.startsWith(dateStr))
-                                                            // Use the real slot datetime if available, otherwise default to 09:00
                                                             const slotDatetime = firstSlot?.datetime || `${dateStr}T09:00:00`
                                                             setSelectedSlot({
-                                                                time: String(queuePosition),
+                                                                time: String(nextToken),
                                                                 datetime: slotDatetime,
                                                                 display: `${dayName}, ${monthName} ${dayNum}`
                                                             })
