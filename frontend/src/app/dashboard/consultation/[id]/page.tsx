@@ -134,6 +134,8 @@ export default function ConsultationPage() {
     const [showLinkModal, setShowLinkModal] = useState(false)
     const [meetLinkInput, setMeetLinkInput] = useState('')
     const [savingLink, setSavingLink] = useState(false)
+    const [savingNotes, setSavingNotes] = useState(false)
+    const [notesSaved, setNotesSaved] = useState(false)
 
     useEffect(() => {
         fetchConsultationData()
@@ -244,6 +246,8 @@ export default function ConsultationPage() {
 
     const saveNotes = async () => {
         try {
+            setSavingNotes(true)
+            setNotesSaved(false)
             const token = localStorage.getItem('auth_token')
             await fetch(`${API_BASE}/api/consultation/${consultation?.id}/notes`, {
                 method: 'PUT',
@@ -264,8 +268,12 @@ export default function ConsultationPage() {
                     provisional_diagnosis: provisionalDiagnosis
                 })
             })
+            setNotesSaved(true)
+            setTimeout(() => setNotesSaved(false), 3000)
         } catch (error) {
             console.error('Error saving notes:', error)
+        } finally {
+            setSavingNotes(false)
         }
     }
 
@@ -912,9 +920,20 @@ export default function ConsultationPage() {
 
                             <button
                                 onClick={saveNotes}
-                                className="mt-4 px-6 py-2 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-colors"
+                                disabled={savingNotes}
+                                className={`mt-4 flex items-center gap-2 px-6 py-2 font-semibold rounded-lg transition-all ${
+                                    notesSaved
+                                        ? 'bg-green-500 text-white'
+                                        : 'bg-teal-600 hover:bg-teal-700 text-white'
+                                } disabled:opacity-60`}
                             >
-                                Save Notes
+                                {savingNotes ? (
+                                    <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+                                ) : notesSaved ? (
+                                    <><CheckCircle className="w-4 h-4" /> Saved!</>
+                                ) : (
+                                    'Save Notes'
+                                )}
                             </button>
                         </div>
                     </div>
