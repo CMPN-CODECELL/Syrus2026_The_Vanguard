@@ -7,7 +7,6 @@ import {
     Send,
     Search,
     Stethoscope,
-    Clock,
     CheckCheck,
     ArrowLeft,
     Loader2
@@ -22,7 +21,7 @@ interface Conversation {
     lastMessage: string
     lastMessageTime: string
     unreadCount: number
-    appointmentId: string
+    appointmentId: string  // most recent appointment (used for sending new messages)
     status: 'active' | 'completed'
 }
 
@@ -43,50 +42,43 @@ export default function PatientMessagesPage() {
     const [loading, setLoading] = useState(true)
     const [sendingMessage, setSendingMessage] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
+    const [patientId, setPatientId] = useState<string>('')
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        fetchConversations()
+        const userData = localStorage.getItem('user')
+        if (userData) {
+            const user = JSON.parse(userData)
+            const id = user.email || user.id
+            setPatientId(id)
+            fetchConversations(id)
+        }
     }, [])
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
 
-    const fetchConversations = async () => {
+    const fetchConversations = async (pid: string) => {
         try {
             setLoading(true)
-            const userData = localStorage.getItem('user')
-            if (!userData) return
+            const appointments = await api.getPatientAppointments(pid)
 
-            const user = JSON.parse(userData)
-            const patientId = user.email || user.id
-
-            // Fetch appointments to get doctor conversations
-            const appointments = await api.getPatientAppointments(patientId)
-
-            // Group by Doctor ID to unify conversations
+            // Group by doctor_id — keep the most recent appointment per doctor for sending new messages
             const doctorMap = new Map<string, any>()
-
             appointments.forEach((apt: any) => {
                 const docId = apt.doctor_id
                 if (!docId) return
-
-                // Logic to pick the "best" appointment context:
-                // 1. Prefer 'in_progress' or 'pending' over 'completed'
-                // 2. Prefer newer scheduled_time
                 if (!doctorMap.has(docId)) {
                     doctorMap.set(docId, apt)
                 } else {
                     const current = doctorMap.get(docId)
                     const isCurrentActive = ['in_progress', 'pending', 'confirmed'].includes(current.status)
                     const isNewActive = ['in_progress', 'pending', 'confirmed'].includes(apt.status)
-
                     if (isNewActive && !isCurrentActive) {
-                        doctorMap.set(docId, apt) // Switch to active
+                        doctorMap.set(docId, apt)
                     } else if (isNewActive === isCurrentActive) {
-                        // Both active or both inactive, pick newer
                         if (new Date(apt.scheduled_time) > new Date(current.scheduled_time)) {
                             doctorMap.set(docId, apt)
                         }
@@ -94,9 +86,8 @@ export default function PatientMessagesPage() {
                 }
             })
 
-            // Create conversations list
             const convos: Conversation[] = Array.from(doctorMap.values()).map((apt: any) => ({
-                id: apt.doctor_id, // Use Doctor ID as conversation ID so it's unique per doctor
+                id: apt.doctor_id,
                 doctorId: apt.doctor_id,
                 doctorName: (apt.doctorName || apt.doctor_name || '').startsWith('Dr.')
                     ? (apt.doctorName || apt.doctor_name)
@@ -105,7 +96,7 @@ export default function PatientMessagesPage() {
                 lastMessage: apt.chief_complaint || 'Start a conversation',
                 lastMessageTime: apt.scheduled_time,
                 unreadCount: 0,
-                appointmentId: apt.id, // The context for the chat
+                appointmentId: apt.id,
                 status: apt.status === 'completed' ? 'completed' : 'active'
             }))
 
@@ -119,26 +110,26 @@ export default function PatientMessagesPage() {
 
     useEffect(() => {
         let interval: NodeJS.Timeout
-
-        if (selectedConversation?.appointmentId) {
-            // Initial fetch
-            fetchMessages(selectedConversation.appointmentId)
-
-            // Poll every 3 seconds
+        if (selectedConversation && patientId) {
+            fetchMessages(selectedConversation.doctorId, patientId)
             interval = setInterval(() => {
-                fetchMessages(selectedConversation.appointmentId)
+                fetchMessages(selectedConversation.doctorId, patientId)
             }, 3000)
         }
+        return () => { if (interval) clearInterval(interval) }
+    }, [selectedConversation, patientId])
 
-        return () => {
-            if (interval) clearInterval(interval)
-        }
-    }, [selectedConversation])
-
-    const fetchMessages = async (appointmentId: string) => {
+    // Fetch ALL messages between this patient and doctor across all consultations
+    const fetchMessages = async (docId: string, pid: string) => {
         try {
-            const data = await api.getMessagesByAppointment(appointmentId)
-            setMessages(data.messages || [])
+            const res = await fetch(
+                `${API_BASE}/api/consultation/messages/doctor-patient?doctor_id=${docId}&patient_id=${pid}`,
+                { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+            )
+            if (res.ok) {
+                const data = await res.json()
+                setMessages(data.messages || [])
+            }
         } catch (error) {
             console.error('Error fetching messages:', error)
         }
@@ -146,7 +137,6 @@ export default function PatientMessagesPage() {
 
     const sendMessage = async () => {
         if (!newMessage.trim() || !selectedConversation) return
-
         try {
             setSendingMessage(true)
             const result = await api.sendMessageByAppointment(
@@ -154,7 +144,6 @@ export default function PatientMessagesPage() {
                 newMessage,
                 'patient'
             )
-
             setMessages(prev => [...prev, {
                 id: result.id,
                 content: result.content,
@@ -171,22 +160,17 @@ export default function PatientMessagesPage() {
 
     const selectConversation = (conv: Conversation) => {
         setSelectedConversation(conv)
-        fetchMessages(conv.appointmentId)
+        if (patientId) fetchMessages(conv.doctorId, patientId)
     }
 
     const formatTime = (dateStr: string) => {
-        const date = new Date(dateStr)
-        return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+        return new Date(dateStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
     }
 
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr)
         const today = new Date()
-        const tomorrow = new Date(today)
-        tomorrow.setDate(tomorrow.getDate() + 1)
-
         if (date.toDateString() === today.toDateString()) return 'Today'
-        if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow'
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     }
 
@@ -234,8 +218,7 @@ export default function PatientMessagesPage() {
                             <motion.button
                                 key={conv.id}
                                 onClick={() => selectConversation(conv)}
-                                className={`w-full p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800 text-left ${selectedConversation?.id === conv.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''
-                                    }`}
+                                className={`w-full p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800 text-left ${selectedConversation?.id === conv.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
                             >
                                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-100 to-teal-100 dark:from-primary-900/50 dark:to-teal-900/50 flex items-center justify-center flex-shrink-0">
                                     <Stethoscope className="w-6 h-6 text-primary-600 dark:text-primary-400" />
@@ -264,7 +247,6 @@ export default function PatientMessagesPage() {
             {/* Chat Area */}
             {selectedConversation ? (
                 <div className="flex-1 flex flex-col">
-                    {/* Chat Header */}
                     <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
                         <button
                             onClick={() => setSelectedConversation(null)}
@@ -281,7 +263,6 @@ export default function PatientMessagesPage() {
                         </div>
                     </div>
 
-                    {/* Messages */}
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         {messages.length === 0 ? (
                             <div className="text-center py-12">
@@ -301,8 +282,7 @@ export default function PatientMessagesPage() {
                                             : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-bl-sm'
                                         }`}>
                                         <p>{msg.content}</p>
-                                        <div className={`flex items-center gap-1 mt-1 text-xs ${msg.sender_type === 'patient' ? 'text-primary-200' : 'text-slate-400'
-                                            }`}>
+                                        <div className={`flex items-center gap-1 mt-1 text-xs ${msg.sender_type === 'patient' ? 'text-primary-200' : 'text-slate-400'}`}>
                                             <span>{formatTime(msg.created_at)}</span>
                                             {msg.sender_type === 'patient' && <CheckCheck className="w-3 h-3" />}
                                         </div>
@@ -313,7 +293,6 @@ export default function PatientMessagesPage() {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Message Input */}
                     <div className="p-4 border-t border-slate-200 dark:border-slate-700">
                         <div className="flex gap-2">
                             <input

@@ -1,17 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
     MessageSquare,
     Send,
     Search,
     User,
-    Clock,
     CheckCheck,
-    MoreVertical,
-    Phone,
-    Video,
     ArrowLeft,
     Loader2
 } from 'lucide-react'
@@ -32,7 +28,6 @@ interface Message {
     content: string
     sender_type: 'doctor' | 'patient' | 'system'
     created_at: string
-    read?: boolean
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -50,90 +45,74 @@ export default function DoctorMessagesPage() {
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        // Get doctor info from localStorage
         const userData = localStorage.getItem('user')
         if (userData) {
             const user = JSON.parse(userData)
-            setDoctorId(user.id || user.email)
+            const id = user.id || user.email
+            setDoctorId(id)
+            fetchConversations(id)
         }
-        fetchConversations()
     }, [])
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
 
-    const fetchConversations = async () => {
+    const fetchConversations = async (docId: string) => {
         try {
             setLoading(true)
-            const userData = localStorage.getItem('user')
-            if (!userData) return
 
-            const user = JSON.parse(userData)
-            const docId = user.id || user.email
-
-            // Fetch appointments to get patient conversations
-            const res = await fetch(`${API_BASE}/api/appointments/doctor/${docId}/today`, {
+            // Fetch ALL appointments (all dates, all statuses) so history is never lost
+            const res = await fetch(`${API_BASE}/api/appointments/doctor/${docId}/all`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             })
 
-            if (res.ok) {
-                const data = await res.json()
-                const apps = data.appointments || []
+            if (!res.ok) return
 
-                // Group by Patient ID to unify conversations
-                const patientMap = new Map<string, any>()
+            const data = await res.json()
+            const apps: any[] = data.appointments || []
 
-                apps.forEach((apt: any) => {
-                    const patId = apt.patient_id
-                    if (!patId) return
-
-                    // Logic to pick the "best" appointment context (same as patient side)
-                    // 1. Prefer 'in_progress' or 'pending' over 'completed'
-                    // 2. Prefer newer scheduled_time
-                    if (!patientMap.has(patId)) {
+            // Group by patient_id — keep the most recent appointment per patient as context
+            const patientMap = new Map<string, any>()
+            apps.forEach((apt: any) => {
+                const patId = apt.patient_id
+                if (!patId) return
+                if (!patientMap.has(patId)) {
+                    patientMap.set(patId, apt)
+                } else {
+                    const current = patientMap.get(patId)
+                    const isCurrentActive = ['in_progress', 'pending', 'confirmed'].includes(current.status)
+                    const isNewActive = ['in_progress', 'pending', 'confirmed'].includes(apt.status)
+                    if (isNewActive && !isCurrentActive) {
                         patientMap.set(patId, apt)
-                    } else {
-                        const current = patientMap.get(patId)
-                        const isCurrentActive = ['in_progress', 'pending', 'confirmed'].includes(current.status)
-                        const isNewActive = ['in_progress', 'pending', 'confirmed'].includes(apt.status)
-
-                        if (isNewActive && !isCurrentActive) {
-                            patientMap.set(patId, apt) // Switch to active
-                        } else if (isNewActive === isCurrentActive) {
-                            // Both active or both inactive, pick newer
-                            if (new Date(apt.scheduled_time) > new Date(current.scheduled_time)) {
-                                patientMap.set(patId, apt)
-                            }
+                    } else if (isNewActive === isCurrentActive) {
+                        if (new Date(apt.scheduled_time) > new Date(current.scheduled_time)) {
+                            patientMap.set(patId, apt)
                         }
                     }
-                })
+                }
+            })
 
-                // Create conversations from grouped appointments
-                const convos: Conversation[] = Array.from(patientMap.values()).map((apt: any) => {
-                    // Prioritize Account Name (Test Patient) over Appointment Name (Kartik Phadale)
-                    // If they differ, show Account Name (Appointment Name)
-                    let disName = apt.patient_name || `Patient ${apt.id?.substring(0, 6)}`
-                    if (apt.patient_account_name && apt.patient_account_name !== apt.patient_name) {
-                        disName = `${apt.patient_account_name} (${apt.patient_name})`
-                    } else if (apt.patient_account_name) {
-                        disName = apt.patient_account_name
-                    }
+            const convos: Conversation[] = Array.from(patientMap.values()).map((apt: any) => {
+                let displayName = apt.patient_name || `Patient ${apt.id?.substring(0, 6)}`
+                if (apt.patient_account_name && apt.patient_account_name !== apt.patient_name) {
+                    displayName = `${apt.patient_account_name} (${apt.patient_name})`
+                } else if (apt.patient_account_name) {
+                    displayName = apt.patient_account_name
+                }
+                return {
+                    id: apt.patient_id,
+                    patientId: apt.patient_id,
+                    patientName: displayName,
+                    lastMessage: apt.chief_complaint || 'Start a conversation',
+                    lastMessageTime: apt.scheduled_time,
+                    unreadCount: 0,
+                    appointmentId: apt.id,
+                    status: apt.status === 'completed' ? 'completed' : 'active'
+                }
+            })
 
-                    return {
-                        id: apt.patient_id, // Use Patient ID as unique conversation ID
-                        patientId: apt.patient_id,
-                        patientName: disName,
-                        lastMessage: apt.chief_complaint || 'Start a conversation',
-                        lastMessageTime: apt.scheduled_time,
-                        unreadCount: 0,
-                        appointmentId: apt.id, // Context for the chat
-                        status: apt.status === 'completed' ? 'completed' : 'active'
-                    }
-                })
-
-                setConversations(convos)
-            }
+            setConversations(convos)
         } catch (error) {
             console.error('Error fetching conversations:', error)
         } finally {
@@ -143,29 +122,22 @@ export default function DoctorMessagesPage() {
 
     useEffect(() => {
         let interval: NodeJS.Timeout
-
-        if (selectedConversation?.appointmentId) {
-            const currentApptId = selectedConversation.appointmentId // strong capture
-            // Initial fetch
-            fetchMessages(currentApptId)
-
-            // Poll every 3 seconds for new messages
+        if (selectedConversation && doctorId) {
+            fetchMessages(doctorId, selectedConversation.patientId)
             interval = setInterval(() => {
-                fetchMessages(currentApptId)
+                fetchMessages(doctorId, selectedConversation.patientId)
             }, 3000)
         }
+        return () => { if (interval) clearInterval(interval) }
+    }, [selectedConversation, doctorId])
 
-        return () => {
-            if (interval) clearInterval(interval)
-        }
-    }, [selectedConversation])
-
-    const fetchMessages = async (appointmentId: string) => {
+    // Fetch ALL messages between this doctor and patient across all consultations
+    const fetchMessages = async (docId: string, patientId: string) => {
         try {
-            const res = await fetch(`${API_BASE}/api/consultation/messages/appointment/${appointmentId}`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            })
-
+            const res = await fetch(
+                `${API_BASE}/api/consultation/messages/doctor-patient?doctor_id=${docId}&patient_id=${patientId}`,
+                { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+            )
             if (res.ok) {
                 const data = await res.json()
                 setMessages(data.messages || [])
@@ -177,7 +149,6 @@ export default function DoctorMessagesPage() {
 
     const sendMessage = async () => {
         if (!newMessage.trim() || !selectedConversation) return
-
         try {
             setSendingMessage(true)
             const res = await fetch(
@@ -185,16 +156,12 @@ export default function DoctorMessagesPage() {
                 {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        content: newMessage,
-                        content_type: 'text'
-                    })
+                    body: JSON.stringify({ content: newMessage, content_type: 'text' })
                 }
             )
-
             if (res.ok) {
                 const msg = await res.json()
                 setMessages(prev => [...prev, {
@@ -214,14 +181,11 @@ export default function DoctorMessagesPage() {
 
     const selectConversation = (conv: Conversation) => {
         setSelectedConversation(conv)
-        if (conv.appointmentId) {
-            fetchMessages(conv.appointmentId)
-        }
+        if (doctorId) fetchMessages(doctorId, conv.patientId)
     }
 
     const formatTime = (dateStr: string) => {
-        const date = new Date(dateStr)
-        return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+        return new Date(dateStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
     }
 
     const filteredConversations = conversations.filter(c =>
@@ -266,8 +230,7 @@ export default function DoctorMessagesPage() {
                             <motion.button
                                 key={conv.id}
                                 onClick={() => selectConversation(conv)}
-                                className={`w-full p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800 text-left ${selectedConversation?.id === conv.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''
-                                    }`}
+                                className={`w-full p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800 text-left ${selectedConversation?.id === conv.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
                             >
                                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-100 to-teal-100 dark:from-primary-900/50 dark:to-teal-900/50 flex items-center justify-center flex-shrink-0">
                                     <User className="w-6 h-6 text-primary-600 dark:text-primary-400" />
@@ -300,29 +263,24 @@ export default function DoctorMessagesPage() {
             {/* Chat Area */}
             {selectedConversation ? (
                 <div className="flex-1 flex flex-col">
-                    {/* Chat Header */}
-                    <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => setSelectedConversation(null)}
-                                className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
-                            >
-                                <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                            </button>
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-100 to-teal-100 dark:from-primary-900/50 dark:to-teal-900/50 flex items-center justify-center">
-                                <User className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                            </div>
-                            <div>
-                                <h2 className="font-semibold text-slate-900 dark:text-white">{selectedConversation.patientName}</h2>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    {selectedConversation.status === 'active' ? 'Active Appointment' : 'Consultation Completed'}
-                                </p>
-                            </div>
+                    <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                        <button
+                            onClick={() => setSelectedConversation(null)}
+                            className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                        >
+                            <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                        </button>
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-100 to-teal-100 dark:from-primary-900/50 dark:to-teal-900/50 flex items-center justify-center">
+                            <User className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                         </div>
-
+                        <div>
+                            <h2 className="font-semibold text-slate-900 dark:text-white">{selectedConversation.patientName}</h2>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                                {selectedConversation.status === 'active' ? 'Active Appointment' : 'Consultation Completed'}
+                            </p>
+                        </div>
                     </div>
 
-                    {/* Messages */}
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         {messages.length === 0 ? (
                             <div className="text-center py-12">
@@ -342,8 +300,7 @@ export default function DoctorMessagesPage() {
                                             : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-bl-sm'
                                         }`}>
                                         <p>{msg.content}</p>
-                                        <div className={`flex items-center gap-1 mt-1 text-xs ${msg.sender_type === 'doctor' ? 'text-primary-200' : 'text-slate-400'
-                                            }`}>
+                                        <div className={`flex items-center gap-1 mt-1 text-xs ${msg.sender_type === 'doctor' ? 'text-primary-200' : 'text-slate-400'}`}>
                                             <span>{formatTime(msg.created_at)}</span>
                                             {msg.sender_type === 'doctor' && <CheckCheck className="w-3 h-3" />}
                                         </div>
@@ -354,7 +311,6 @@ export default function DoctorMessagesPage() {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Message Input */}
                     <div className="p-4 border-t border-slate-200 dark:border-slate-700">
                         <div className="flex gap-2">
                             <input

@@ -354,6 +354,47 @@ def estimate_token_count(profile: PatientProfileCreateRequest) -> int:
 # DOCTOR ENDPOINTS
 # ============================================================================
 
+@router.get("/doctor/{doctor_id}/all")
+async def get_all_doctor_appointments(doctor_id: str):
+    """Get ALL appointments for a doctor across all dates and statuses."""
+    try:
+        firebase = get_firebase_service()
+        appointments = firebase.get_all_appointments_by_doctor(doctor_id)
+
+        # Enrich with patient account names
+        patient_ids = {a.get("patient_id") for a in appointments if a.get("patient_id")}
+        patient_map = {}
+        for pid in patient_ids:
+            try:
+                p_data = firebase.get_patient_by_id(pid)
+                if not p_data and "@" in str(pid):
+                    p_data = firebase.get_patient_by_email(pid)
+                if p_data:
+                    patient_map[pid] = p_data
+            except Exception as e:
+                print(f"Error fetching patient {pid}: {e}")
+
+        def serialize_appointment(apt: dict) -> dict:
+            result = {}
+            for k, v in apt.items():
+                result[k] = v.isoformat() if hasattr(v, 'isoformat') else v
+            pid = apt.get("patient_id")
+            if pid and pid in patient_map:
+                p = patient_map[pid]
+                account_name = p.get("name") or p.get("full_name")
+                if account_name:
+                    result["patient_account_name"] = account_name
+                result["patient_email"] = p.get("email")
+            return result
+
+        return {
+            "appointments": [serialize_appointment(a) for a in appointments],
+            "total": len(appointments)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/doctor/{doctor_id}/today")
 async def get_doctor_appointments_today(doctor_id: str, date: Optional[str] = None):
     """Get all appointments for a doctor for today (or specified date)."""

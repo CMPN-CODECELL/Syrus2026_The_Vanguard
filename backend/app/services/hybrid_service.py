@@ -258,6 +258,14 @@ class HybridDatabaseService:
     def get_appointments_by_doctor_status(self, doctor_id: str, status: str) -> List[dict]:
         result = self._execute_with_fallback("get_appointments_by_doctor_status", doctor_id, status)
         return result if result is not None else []
+
+    def get_all_appointments_by_doctor(self, doctor_id: str) -> List[dict]:
+        result = self._execute_with_fallback("get_all_appointments_by_doctor", doctor_id)
+        return result if result is not None else []
+
+    def get_consultations_by_doctor_patient(self, doctor_id: str, patient_id: str) -> List[dict]:
+        result = self._execute_with_fallback("get_consultations_by_doctor_patient", doctor_id, patient_id)
+        return result if result is not None else []
     
     def has_active_appointment_with_doctor(self, patient_id: str, doctor_id: str) -> bool:
         result = self._execute_with_fallback("has_active_appointment_with_doctor", patient_id, doctor_id)

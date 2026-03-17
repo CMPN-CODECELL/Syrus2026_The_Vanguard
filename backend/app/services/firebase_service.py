@@ -819,6 +819,43 @@ class FirebaseService:
         doc_ref.set(data)
         return data  # Return serialized (JSON-safe) version
 
+    def get_all_appointments_by_doctor(self, doctor_id: str) -> List[dict]:
+        """Get ALL appointments for a doctor regardless of date/status."""
+        if not self.is_connected:
+            return []
+        try:
+            docs = self._db.collection("appointments")\
+                .where("doctor_id", "==", doctor_id).stream()
+            results = [doc.to_dict() for doc in docs]
+            # Normalize scheduled_time
+            for r in results:
+                st = r.get("scheduled_time")
+                if st is not None and hasattr(st, 'isoformat'):
+                    r["scheduled_time"] = st.isoformat()
+            results.sort(key=lambda x: str(x.get("scheduled_time", "")), reverse=True)
+            return results
+        except Exception as e:
+            print(f"ERROR get_all_appointments_by_doctor: {e}")
+            return []
+
+    def get_consultations_by_doctor_patient(self, doctor_id: str, patient_id: str) -> List[dict]:
+        """Get all consultations between a specific doctor and patient."""
+        if not self.is_connected:
+            return []
+        try:
+            docs = self._db.collection("consultations")\
+                .where("doctor_id", "==", doctor_id).stream()
+            results = []
+            for doc in docs:
+                data = doc.to_dict()
+                if data.get("patient_id") == patient_id:
+                    results.append(data)
+            results.sort(key=lambda x: str(x.get("created_at", "")))
+            return results
+        except Exception as e:
+            print(f"ERROR get_consultations_by_doctor_patient: {e}")
+            return []
+
     def get_consultation_by_id(self, consultation_id: str) -> Optional[dict]:
         """Get consultation by ID."""
         if not self.is_connected:

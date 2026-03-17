@@ -630,6 +630,53 @@ async def get_prescription_by_appointment(appointment_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/messages/doctor-patient")
+async def get_messages_doctor_patient(doctor_id: str, patient_id: str):
+    """Get ALL messages between a doctor and patient across all consultations."""
+    try:
+        # Get all consultations between this doctor-patient pair
+        consultations = db.get_consultations_by_doctor_patient(doctor_id, patient_id)
+        if not consultations:
+            return {'messages': [], 'consultations': []}
+
+        all_messages = []
+        for consultation in consultations:
+            c_id = consultation.get('id')
+            msgs = db.get_messages_by_consultation(c_id)
+            for msg in msgs:
+                try:
+                    decrypted_content = encryption.decrypt_message(
+                        msg.get('encrypted_content'),
+                        msg.get('iv'),
+                        c_id
+                    )
+                    all_messages.append({
+                        **msg,
+                        'content': decrypted_content,
+                        'encrypted_content': None,
+                        'iv': None,
+                        'consultation_id': c_id
+                    })
+                except Exception as e:
+                    print(f"Error decrypting message {msg.get('id')}: {e}")
+                    all_messages.append({
+                        **msg,
+                        'content': '[Decryption failed]',
+                        'consultation_id': c_id
+                    })
+
+        # Sort all messages by created_at
+        all_messages.sort(key=lambda x: str(x.get('created_at', '')))
+
+        return {
+            'messages': all_messages,
+            'consultations': [c.get('id') for c in consultations]
+        }
+    except Exception as e:
+        print(f"Error getting doctor-patient messages: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/messages/appointment/{appointment_id}")
 async def get_messages_by_appointment(appointment_id: str):
     """Get all messages for an appointment - works before and after consultation."""
