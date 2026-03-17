@@ -169,6 +169,9 @@ export const api = {
             `/api/appointments/doctor/${doctorId}/upcoming?days=${days}${startDate ? `&start_date=${startDate}` : ''}`
         ),
 
+    getDoctorAppointmentsHistory: (doctorId: string) =>
+        fetchAPI<{ records: any[]; total: number }>(`/api/appointments/doctor/${doctorId}/history`),
+
     getAvailableSlots: (doctorId: string, date: string) =>
         fetchAPI<{ date: string; slots: any[]; consultation_duration: number }>(
             `/api/appointments/doctors/${doctorId}/slots?date=${date}`

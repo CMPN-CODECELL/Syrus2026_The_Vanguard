@@ -13,7 +13,8 @@ import {
     Menu,
     X,
     ChevronDown,
-    MessageSquare
+    MessageSquare,
+    ClipboardList
 } from 'lucide-react'
 import Image from 'next/image'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -25,6 +26,7 @@ const navItems = [
     { label: 'Messages', href: '/dashboard/messages', icon: MessageSquare },
     { label: 'Profile', href: '/dashboard/profile', icon: User },
     { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+    { label: 'Patient Records', href: '/dashboard/patient-records', icon: ClipboardList },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

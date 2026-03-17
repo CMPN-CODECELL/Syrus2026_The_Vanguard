@@ -242,7 +242,7 @@ export default function DashboardOverview() {
                     </Link>
 
                     {/* Patient Records Card */}
-                    <Link href="/dashboard/patients" className="group">
+                    <Link href="/dashboard/patient-records" className="group">
                         <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border rounded-2xl p-6 shadow-sm hover:shadow-lg hover:border-primary-400 dark:hover:border-primary-400 transition-all duration-300 hover:-translate-y-1">
                             <div className="w-full h-40 relative mb-4 overflow-hidden bg-slate-50 dark:bg-dark-elevated rounded-xl">
                                 <Image

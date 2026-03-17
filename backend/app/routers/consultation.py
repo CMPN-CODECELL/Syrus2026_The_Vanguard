@@ -1317,3 +1317,72 @@ def _log_action(
         db.create_audit_log(entry.model_dump())
     except Exception as e:
         print(f"Warning: Failed to create audit log: {e}")
+
+
+# =============================================================================
+# DOCTOR → PATIENT NOTIFICATIONS
+# =============================================================================
+
+@router.post("/appointment/{appointment_id}/doctor-note")
+async def save_doctor_note_to_patient(appointment_id: str, request: dict):
+    """Save a doctor's note/notification for the patient after consultation."""
+    try:
+        note_id = f"dnote_{uuid.uuid4().hex[:16]}"
+        consultation = db.get_consultation_by_appointment(appointment_id)
+        appointment = db.get_appointment_by_id(appointment_id)
+        if not appointment:
+            raise HTTPException(status_code=404, detail="Appointment not found")
+
+        note_data = {
+            "id": note_id,
+            "appointment_id": appointment_id,
+            "consultation_id": consultation.get("id") if consultation else None,
+            "patient_id": appointment.get("patient_id"),
+            "doctor_id": appointment.get("doctor_id"),
+            "doctor_name": request.get("doctor_name", ""),
+            "note": request.get("note", ""),
+            "created_at": datetime.utcnow().isoformat(),
+            "read": False,
+        }
+        db._db.collection("patient_notifications").document(note_id).set(note_data)
+        return {"success": True, "id": note_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/appointment/{appointment_id}/doctor-note")
+async def get_doctor_note_for_appointment(appointment_id: str):
+    """Get doctor note for a specific appointment."""
+    try:
+        docs = db._db.collection("patient_notifications")\
+            .where("appointment_id", "==", appointment_id).limit(1).stream()
+        for doc in docs:
+            return {"note": doc.to_dict()}
+        return {"note": None}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/patient/{patient_id}/notifications")
+async def get_patient_notifications(patient_id: str):
+    """Get all doctor notifications for a patient."""
+    try:
+        docs = db._db.collection("patient_notifications")\
+            .where("patient_id", "==", patient_id).stream()
+        notes = [doc.to_dict() for doc in docs]
+        notes.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+        return {"notifications": notes}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.patch("/notifications/{note_id}/read")
+async def mark_notification_read(note_id: str):
+    """Mark a patient notification as read."""
+    try:
+        db._db.collection("patient_notifications").document(note_id).update({"read": True})
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

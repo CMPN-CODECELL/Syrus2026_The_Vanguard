@@ -10,7 +10,10 @@ import {
     MapPin,
     Video,
     ChevronRight,
-    Stethoscope
+    Stethoscope,
+    Bell,
+    CheckCircle,
+    X
 } from 'lucide-react'
 import api from '@/lib/api'
 import ProfileCompletionModal, { calculateProfileCompletion } from '@/components/ProfileCompletionModal'
@@ -45,6 +48,7 @@ export default function PatientDashboard() {
         healthScore: 'Good'
     })
     const [appointments, setAppointments] = useState<Appointment[]>([])
+    const [notifications, setNotifications] = useState<any[]>([])
 
     // Profile completion modal state
     const [showProfileModal, setShowProfileModal] = useState(false)
@@ -123,6 +127,16 @@ export default function PatientDashboard() {
                             medicalRecords: recordsCount,
                             healthScore: 'Good'
                         })
+
+                        // Fetch doctor notifications
+                        try {
+                            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+                            const notifRes = await fetch(`${API_URL}/api/consultation/patient/${patientId}/notifications`)
+                            if (notifRes.ok) {
+                                const nd = await notifRes.json()
+                                setNotifications(nd.notifications || [])
+                            }
+                        } catch (e) { /* silent */ }
 
                         // Fetch full profile from API
                         try {
@@ -241,6 +255,59 @@ export default function PatientDashboard() {
                     </h2>
                 </motion.div>
             </section>
+
+            {/* Doctor Notifications */}
+            {notifications.length > 0 && (
+                <section>
+                    <div className="flex items-center gap-2 mb-4">
+                        <Bell className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                        <h3 className="font-bold text-slate-900 dark:text-white">Messages from Your Doctor</h3>
+                        <span className="bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 text-xs px-2 py-0.5 rounded-full font-medium">
+                            {notifications.filter(n => !n.read).length} new
+                        </span>
+                    </div>
+                    <div className="space-y-3">
+                        {notifications.map((n: any) => (
+                            <motion.div
+                                key={n.id}
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className={`flex items-start gap-4 p-4 rounded-2xl border transition-all ${
+                                    n.read
+                                        ? 'bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'
+                                        : 'bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800'
+                                }`}
+                            >
+                                <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-900/40 flex items-center justify-center shrink-0">
+                                    <Stethoscope className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                                        Dr. {n.doctor_name || 'Your Doctor'}
+                                    </p>
+                                    <p className="text-sm text-slate-600 dark:text-slate-300 mt-0.5">{n.note}</p>
+                                    <p className="text-xs text-slate-400 mt-1">
+                                        {new Date(n.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    </p>
+                                </div>
+                                {!n.read && (
+                                    <button
+                                        onClick={async () => {
+                                            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+                                            await fetch(`${API_URL}/api/consultation/notifications/${n.id}/read`, { method: 'PATCH' })
+                                            setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, read: true } : x))
+                                        }}
+                                        className="shrink-0 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                        title="Mark as read"
+                                    >
+                                        <CheckCircle className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </motion.div>
+                        ))}
+                    </div>
+                </section>
+            )}
 
             {/* Today's Overview - LARGE */}
             <section ref={statsRef}>

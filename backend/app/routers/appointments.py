@@ -506,6 +506,26 @@ async def get_doctor_appointments_today(doctor_id: str, date: Optional[str] = No
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/doctor/{doctor_id}/history")
+async def get_doctor_appointments_history(doctor_id: str):
+    """Get all completed/no-show appointments for a doctor (patient records history)."""
+    try:
+        firebase = get_firebase_service()
+        completed = firebase.get_appointments_by_doctor_status(doctor_id, "completed") or []
+        no_show = firebase.get_appointments_by_doctor_status(doctor_id, "no_show") or []
+        all_records = completed + no_show
+
+        def serialize(apt: dict) -> dict:
+            return {k: v.isoformat() if hasattr(v, 'isoformat') else v for k, v in apt.items()}
+
+        all_records = [serialize(a) for a in all_records]
+        all_records.sort(key=lambda x: x.get("scheduled_time", ""), reverse=True)
+
+        return {"records": all_records, "total": len(all_records)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/doctor/{doctor_id}/upcoming")
 async def get_doctor_appointments_upcoming(doctor_id: str, days: int = 7, start_date: Optional[str] = None):
     """Get all appointments for a doctor for the upcoming N days (excluding today)."""
