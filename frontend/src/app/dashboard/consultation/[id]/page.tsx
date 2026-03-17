@@ -671,20 +671,20 @@ export default function ConsultationPage() {
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Uploaded Documents</h3>
                             {patientProfile?.uploaded_documents?.length ? (
                                 <div className="space-y-2">
-                                    {patientProfile.uploaded_documents.map((doc: any) => (
-                                        <div key={doc} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                    {patientProfile.uploaded_documents.map((doc: any, docIdx: number) => {
+                                        const docId = typeof doc === 'string' ? doc : (doc.id || doc.file_id || '')
+                                        const docName = typeof doc === 'string' ? `Document ${docIdx + 1}` : (doc.name || doc.filename || `Document ${docIdx + 1}`)
+                                        return (
+                                        <div key={docId || docIdx} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                                             <div className="flex items-center gap-3">
                                                 <FileText className="w-5 h-5 text-teal-600" />
                                                 <div>
-                                                    <p className="font-medium text-slate-900 dark:text-white">
-                                                        {/* Document ID is just a UUID, we don't have the original name stored easily in this view yet, using generic name or ID */}
-                                                        Medical Document
-                                                    </p>
-                                                    <p className="text-xs text-slate-500 font-mono">{typeof doc === 'string' ? doc.substring(0, 8) : doc.id?.substring(0, 8)}...</p>
+                                                    <p className="font-medium text-slate-900 dark:text-white">{docName}</p>
+                                                    <p className="text-xs text-slate-500 font-mono">{docId.substring(0, 8)}...</p>
                                                 </div>
                                             </div>
                                             <a
-                                                href={`${API_BASE}/api/appointments/files/${typeof doc === 'string' ? doc : doc.id}`}
+                                                href={`${API_BASE}/api/appointments/files/${docId}`}
                                                 download
                                                 target="_blank"
                                                 rel="noopener noreferrer"
@@ -693,7 +693,8 @@ export default function ConsultationPage() {
                                                 <Download className="w-5 h-5" />
                                             </a>
                                         </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             ) : (
                                 <p className="text-slate-500 dark:text-slate-400">No documents uploaded</p>
