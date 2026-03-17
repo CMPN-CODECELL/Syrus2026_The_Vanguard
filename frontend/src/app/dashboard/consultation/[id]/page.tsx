@@ -58,7 +58,7 @@ interface Medication {
     frequency: string
     timing: string[]
     relation_to_food: string
-    duration_value: number
+    duration_value: number | string
     duration_unit: string
     instructions: string
 }
@@ -1148,8 +1148,8 @@ export default function ConsultationPage() {
                                         <input
                                             type="number"
                                             placeholder="Duration"
-                                            value={med.duration_value}
-                                            onChange={(e) => updateMedication(index, 'duration_value', parseInt(e.target.value))}
+                                            value={med.duration_value ?? ''}
+                                            onChange={(e) => updateMedication(index, 'duration_value', e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
                                             className="w-20 px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg"
                                         />
                                         <select
