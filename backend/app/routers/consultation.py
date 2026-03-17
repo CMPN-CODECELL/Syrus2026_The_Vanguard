@@ -3,7 +3,7 @@ Consultation API Router
 Endpoints for managing active consultation sessions between doctors and patients.
 """
 
-from fastapi import APIRouter, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, HTTPException, status, UploadFile, File, Request, Depends
 from typing import List, Optional
 from datetime import datetime, timedelta
 import uuid
@@ -39,6 +39,7 @@ from ..services.ai_chat_service import (
     get_ai_chat_service, 
     generate_comprehensive_analysis
 )
+from ..services.auth_service import get_current_user_from_token as get_current_user
 
 router = APIRouter(prefix="/api/consultation", tags=["consultation"])
 
@@ -1103,232 +1104,231 @@ async def get_ai_chat_history(consultation_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/ai/analysis/{consultation_id}/pdf")
-async def download_analysis_pdf(consultation_id: str):
-    """Generate and download AI analysis as PDF."""
+@router.post("/ai/analysis/{consultation_id}/pdf")
+async def download_analysis_pdf(
+    consultation_id: str,
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """Generate and download AI analysis as PDF from posted analysis data."""
     from fastapi.responses import Response
     import fitz  # PyMuPDF
     import io
-    
+    import re as _re
+
     try:
-        analysis = db.get_ai_analysis_by_consultation(consultation_id)
+        body = await request.json()
+        analysis = body.get("analysis") or {}
+
+        # Fallback to DB if no analysis posted
         if not analysis:
-            # Analysis not in DB yet — regenerate on the fly
-            consultation = db.get_consultation_by_id(consultation_id)
-            if not consultation:
-                raise HTTPException(status_code=404, detail="Consultation not found")
-            appointment = db.get_appointment_by_id(consultation.get("appointment_id"))
-            if not appointment:
-                raise HTTPException(status_code=404, detail="Appointment not found")
-            patient_profile = db.get_patient_profile_by_appointment(appointment.get("id")) or {}
-            basic_info = patient_profile.get("basic_info", {})
-            patient_context = {
-                "patient_id": appointment.get("patient_id"),
-                "doctor_id": appointment.get("doctor_id"),
-                "name": basic_info.get("full_name") or appointment.get("patient_name") or "Unknown",
-                "age": basic_info.get("age") or appointment.get("patient_age"),
-                "gender": basic_info.get("gender") or appointment.get("patient_gender"),
-                "blood_group": basic_info.get("blood_group"),
-                "allergies": basic_info.get("allergies", []),
-                "current_medications": basic_info.get("current_medications", []),
-                "chief_complaint": patient_profile.get("chief_complaint", {}),
-                "medical_history": patient_profile.get("medical_history", []),
-            }
-            uploaded_documents = patient_profile.get("uploaded_documents", [])
-            document_ids = [
-                (doc.get("id") or doc.get("file_id") or doc.get("document_id"))
-                for doc in uploaded_documents if isinstance(doc, dict)
-            ] + [doc for doc in uploaded_documents if isinstance(doc, str)]
-            document_ids = [d for d in document_ids if d]
-            result = generate_comprehensive_analysis(
-                consultation_id=consultation_id,
-                patient_profile=patient_context,
-                document_ids=document_ids
-            )
-            analysis = result.get("analysis") or {}
-        if not analysis:
-            raise HTTPException(status_code=404, detail="No analysis found")
-        
-        # Get patient info for header
-        consultation = db.get_consultation_by_id(consultation_id)
-        appointment = db.get_appointment_by_id(consultation.get("appointment_id")) if consultation else None
+            analysis = db.get_ai_analysis_by_consultation(consultation_id) or {}
+
+        # Get patient + doctor info
+        consultation_rec = db.get_consultation_by_id(consultation_id)
+        appointment = db.get_appointment_by_id(consultation_rec.get("appointment_id")) if consultation_rec else None
         patient_name = appointment.get("patient_name", "Patient") if appointment else "Patient"
-        
-        # Create PDF document
+
+        doctor_name = "Unknown Doctor"
+        if appointment and appointment.get("doctor_id"):
+            doctor = db.get_doctor_by_id(appointment.get("doctor_id"))
+            if doctor:
+                doctor_name = doctor.get("name") or doctor.get("full_name") or doctor_name
+        # Fallback to current user
+        if doctor_name == "Unknown Doctor" and current_user:
+            doctor_name = current_user.get("name") or current_user.get("full_name") or doctor_name
+
+        # ── PDF layout constants ──────────────────────────────────────────────
+        W, H = 595, 842          # A4
+        ML, MR, MT, MB = 55, 55, 60, 50   # margins
+        CW = W - ML - MR         # content width
+        TEAL   = (0.0,  0.50, 0.45)
+        DARK   = (0.10, 0.13, 0.18)
+        GRAY   = (0.45, 0.45, 0.45)
+        LGRAY  = (0.85, 0.85, 0.85)
+        AMBER  = (0.75, 0.45, 0.0)
+        WHITE  = (1.0,  1.0,  1.0)
+        WMARK  = (0.88, 0.88, 0.88)   # watermark colour
+
         doc = fitz.open()
-        
-        # Page settings
-        width, height = 595, 842  # A4 size
-        margin = 50
-        content_width = width - 2 * margin
-        
-        # Create first page
-        page = doc.new_page(width=width, height=height)
-        y_pos = margin
-        
-        # Header
-        page.insert_text(
-            (margin, y_pos + 20),
-            "MedVision AI Analysis Report",
-            fontsize=18,
-            fontname="helv",
-            color=(0.29, 0.44, 0.65)  # Slate blue
-        )
-        y_pos += 40
-        
-        page.insert_text(
-            (margin, y_pos + 12),
-            f"Patient: {patient_name}",
-            fontsize=11,
-            fontname="helv"
-        )
-        y_pos += 20
-        
-        page.insert_text(
-            (margin, y_pos + 12),
-            f"Generated: {analysis.get('created_at', 'N/A')}",
-            fontsize=10,
-            fontname="helv",
-            color=(0.5, 0.5, 0.5)
-        )
-        y_pos += 30
-        
-        # Draw separator line
-        page.draw_line((margin, y_pos), (width - margin, y_pos), color=(0.8, 0.8, 0.8))
-        y_pos += 20
-        
-        # Confidence Score
-        confidence = analysis.get("confidence_score", 70)
-        page.insert_text(
-            (margin, y_pos + 12),
-            f"Analysis Confidence: {confidence:.0f}%",
-            fontsize=11,
-            fontname="helv",
-            color=(0.29, 0.44, 0.65)
-        )
-        y_pos += 25
-        
-        # Executive Summary
-        if analysis.get("executive_summary"):
-            page.insert_text(
-                (margin, y_pos + 14),
-                "Executive Summary",
-                fontsize=13,
-                fontname="helv",
-            )
-            y_pos += 20
-            
-            # Wrap text for summary
-            summary = analysis["executive_summary"]
-            lines = _wrap_text(summary, 80)
+
+        def new_page():
+            p = doc.new_page(width=W, height=H)
+            # Diagonal watermark — doctor name repeated
+            wm_text = f"Dr. {doctor_name}  •  MedVision AI"
+            for yi in range(0, H + 100, 130):
+                p.insert_text(
+                    (-30 + yi * 0.3, yi),
+                    wm_text,
+                    fontsize=11,
+                    fontname="helv",
+                    color=WMARK,
+                    rotate=45,
+                )
+            return p
+
+        def add_page_footer(p, page_num):
+            p.draw_line((ML, H - MB + 10), (W - MR, H - MB + 10), color=LGRAY, width=0.5)
+            p.insert_text((ML, H - MB + 22), "MedVision AI — For clinical reference only. Not a substitute for professional judgment.", fontsize=7, fontname="helv", color=GRAY)
+            p.insert_text((W - MR - 30, H - MB + 22), f"Page {page_num}", fontsize=7, fontname="helv", color=GRAY)
+
+        def check_space(p, y, needed, page_num_ref):
+            if y + needed > H - MB - 10:
+                add_page_footer(p, page_num_ref[0])
+                page_num_ref[0] += 1
+                p = new_page()
+                y = MT
+            return p, y
+
+        page_num = [1]
+        page = new_page()
+        y = MT
+
+        # ── Cover header ──────────────────────────────────────────────────────
+        # Teal header bar
+        page.draw_rect(fitz.Rect(0, 0, W, 80), color=TEAL, fill=TEAL)
+        page.insert_text((ML, 30), "MedVision AI", fontsize=20, fontname="helv", color=WHITE)
+        page.insert_text((ML, 52), "Clinical Analysis Report", fontsize=11, fontname="helv", color=(0.8, 1.0, 0.97))
+        # Doctor badge top-right
+        page.insert_text((W - MR - 160, 30), f"Analysed by:", fontsize=8, fontname="helv", color=(0.8, 1.0, 0.97))
+        page.insert_text((W - MR - 160, 46), f"Dr. {doctor_name}", fontsize=10, fontname="helv", color=WHITE)
+        y = 100
+
+        # Patient + meta row
+        page.insert_text((ML, y), f"Patient:", fontsize=9, fontname="helv", color=GRAY)
+        page.insert_text((ML + 55, y), patient_name, fontsize=10, fontname="helv", color=DARK)
+        from datetime import datetime as _dt
+        now_str = _dt.now().strftime("%d %b %Y, %I:%M %p")
+        page.insert_text((W - MR - 130, y), f"Generated: {now_str}", fontsize=8, fontname="helv", color=GRAY)
+        y += 16
+
+        # Confidence badge
+        conf = float(analysis.get("confidence_score") or 0)
+        conf_label = "High Confidence" if conf >= 75 else "Moderate" if conf >= 50 else "Low — Review Required"
+        conf_color = (0.0, 0.6, 0.3) if conf >= 75 else AMBER if conf >= 50 else (0.8, 0.1, 0.1)
+        page.insert_text((ML, y), f"Confidence Score: {conf:.0f}%  ({conf_label})", fontsize=9, fontname="helv", color=conf_color)
+        y += 8
+
+        page.draw_line((ML, y), (W - MR, y), color=LGRAY, width=0.8)
+        y += 16
+
+        # ── Helper: render a section heading ─────────────────────────────────
+        def section_heading(p, y, title, color=DARK):
+            p, y = check_space(p, y, 24, page_num)
+            p.draw_rect(fitz.Rect(ML, y, ML + 3, y + 14), color=TEAL, fill=TEAL)
+            p.insert_text((ML + 8, y + 11), title, fontsize=12, fontname="helv", color=color)
+            return p, y + 20
+
+        # ── Helper: render wrapped paragraph text ─────────────────────────────
+        def render_text(p, y, text, fontsize=9.5, color=DARK, indent=0, bold=False):
+            fname = "helv" if not bold else "helv"
+            words = text.split()
+            line, lines_out = "", []
+            max_w = int((CW - indent) / (fontsize * 0.52))
+            for w in words:
+                if len(line) + len(w) + 1 <= max_w:
+                    line += (" " if line else "") + w
+                else:
+                    if line: lines_out.append(line)
+                    line = w
+            if line: lines_out.append(line)
+            for ln in lines_out:
+                p, y = check_space(p, y, fontsize + 4, page_num)
+                p.insert_text((ML + indent, y + fontsize), ln, fontsize=fontsize, fontname=fname, color=color)
+                y += fontsize + 3
+            return p, y
+
+        # ── Helper: render markdown block ─────────────────────────────────────
+        def render_markdown(p, y, md_text):
+            lines = md_text.split("\n")
             for line in lines:
-                if y_pos > height - margin - 20:
-                    page = doc.new_page(width=width, height=height)
-                    y_pos = margin
-                page.insert_text((margin, y_pos + 10), line, fontsize=10, fontname="helv")
-                y_pos += 14
-            y_pos += 15
-        
-        # Key Findings
-        if analysis.get("key_findings"):
-            page.insert_text(
-                (margin, y_pos + 14),
-                "Key Findings",
-                fontsize=13,
-                fontname="helv",
-            )
-            y_pos += 20
-            
-            for finding in analysis["key_findings"][:10]:
-                if y_pos > height - margin - 20:
-                    page = doc.new_page(width=width, height=height)
-                    y_pos = margin
-                finding_text = finding.get("finding", str(finding)) if isinstance(finding, dict) else str(finding)
-                lines = _wrap_text(f"• {finding_text}", 75)
-                for line in lines:
-                    page.insert_text((margin + 10, y_pos + 10), line, fontsize=10, fontname="helv")
-                    y_pos += 14
-            y_pos += 15
-        
-        # Uncertainties
-        if analysis.get("uncertainties"):
-            page.insert_text(
-                (margin, y_pos + 14),
-                "Points Requiring Verification",
-                fontsize=13,
-                fontname="helv",
-                color=(0.8, 0.5, 0)
-            )
-            y_pos += 20
-            
-            for uncertainty in analysis["uncertainties"][:5]:
-                if y_pos > height - margin - 20:
-                    page = doc.new_page(width=width, height=height)
-                    y_pos = margin
-                lines = _wrap_text(f"⚠ {uncertainty}", 75)
-                for line in lines:
-                    page.insert_text((margin + 10, y_pos + 10), line, fontsize=10, fontname="helv", color=(0.6, 0.4, 0))
-                    y_pos += 14
-            y_pos += 15
-        
-        # Full Analysis (if space allows)
-        if analysis.get("analysis_markdown"):
-            if y_pos > height - 100:
-                page = doc.new_page(width=width, height=height)
-                y_pos = margin
-            
-            page.insert_text(
-                (margin, y_pos + 14),
-                "Detailed Analysis",
-                fontsize=13,
-                fontname="helv",
-            )
-            y_pos += 20
-            
-            # Clean markdown for PDF (basic conversion)
-            clean_text = analysis["analysis_markdown"]
-            clean_text = clean_text.replace("###", "").replace("##", "").replace("#", "")
-            clean_text = clean_text.replace("**", "").replace("*", "")
-            clean_text = clean_text.replace("```", "")
-            
-            lines = clean_text.split("\n")
-            for line in lines:
-                if not line.strip():
-                    y_pos += 8
+                stripped = line.strip()
+                if not stripped:
+                    y += 5
                     continue
-                if y_pos > height - margin - 20:
-                    page = doc.new_page(width=width, height=height)
-                    y_pos = margin
-                wrapped = _wrap_text(line.strip(), 80)
-                for wline in wrapped:
-                    page.insert_text((margin, y_pos + 10), wline, fontsize=9, fontname="helv")
-                    y_pos += 12
-        
-        # Footer on last page
-        page.insert_text(
-            (margin, height - 30),
-            "Generated by MedVision AI - For clinical reference only",
-            fontsize=8,
-            fontname="helv",
-            color=(0.6, 0.6, 0.6)
-        )
-        
-        # Save to bytes
+                # H3
+                if stripped.startswith("### "):
+                    p, y = check_space(p, y, 22, page_num)
+                    p.draw_line((ML, y + 14), (W - MR, y + 14), color=LGRAY, width=0.4)
+                    p.insert_text((ML, y + 12), stripped[4:], fontsize=11, fontname="helv", color=TEAL)
+                    y += 20
+                # H2
+                elif stripped.startswith("## "):
+                    p, y = section_heading(p, y, stripped[3:])
+                # H1
+                elif stripped.startswith("# "):
+                    p, y = section_heading(p, y, stripped[2:], color=TEAL)
+                # Bullet
+                elif stripped.startswith("- ") or stripped.startswith("* "):
+                    clean = stripped[2:]
+                    # Strip inline bold markers for PDF
+                    clean = _re.sub(r'\*\*(.+?)\*\*', r'\1', clean)
+                    clean = _re.sub(r'\*(.+?)\*', r'\1', clean)
+                    p, y = render_text(p, y, f"•  {clean}", fontsize=9, indent=10)
+                # Bold line (standalone)
+                elif stripped.startswith("**") and stripped.endswith("**"):
+                    clean = stripped.strip("*")
+                    p, y = render_text(p, y, clean, fontsize=10, color=DARK, bold=True)
+                # Normal paragraph
+                else:
+                    clean = _re.sub(r'\*\*(.+?)\*\*', r'\1', stripped)
+                    clean = _re.sub(r'\*(.+?)\*', r'\1', clean)
+                    clean = clean.replace("`", "")
+                    p, y = render_text(p, y, clean, fontsize=9.5)
+                y += 1
+            return p, y
+
+        # ── Executive Summary ─────────────────────────────────────────────────
+        if analysis.get("executive_summary"):
+            page, y = section_heading(page, y, "Executive Summary")
+            # Render as a tinted box
+            summary = analysis["executive_summary"]
+            summary_lines = _wrap_text(summary, int(CW / 5.2))
+            box_h = len(summary_lines) * 13 + 16
+            page, y = check_space(page, y, box_h, page_num)
+            page.draw_rect(fitz.Rect(ML, y, W - MR, y + box_h), color=(0.94, 0.91, 1.0), fill=(0.94, 0.91, 1.0), radius=4)
+            ty = y + 10
+            for sl in summary_lines:
+                page.insert_text((ML + 8, ty + 9), sl, fontsize=9.5, fontname="helv", color=DARK)
+                ty += 13
+            y += box_h + 12
+
+        # ── Points to Verify ──────────────────────────────────────────────────
+        if analysis.get("uncertainties"):
+            page, y = section_heading(page, y, "Points to Verify", color=AMBER)
+            for u in analysis["uncertainties"]:
+                clean_u = _re.sub(r'\*\*(.+?)\*\*', r'\1', u)
+                clean_u = _re.sub(r'\*(.+?)\*', r'\1', clean_u)
+                page, y = render_text(page, y, f"⚠  {clean_u}", fontsize=9, color=(0.6, 0.35, 0.0), indent=5)
+                y += 2
+
+        y += 8
+
+        # ── Detailed Analysis (full markdown) ─────────────────────────────────
+        if analysis.get("analysis_markdown"):
+            page, y = section_heading(page, y, "Detailed Analysis")
+            page, y = render_markdown(page, y, analysis["analysis_markdown"])
+
+        # ── Footer on last page ───────────────────────────────────────────────
+        add_page_footer(page, page_num[0])
+
         pdf_bytes = doc.tobytes()
         doc.close()
-        
+
+        safe_patient = patient_name.replace(" ", "_")
         return Response(
             content=pdf_bytes,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f'attachment; filename="analysis_{consultation_id}.pdf"'
+                "Content-Disposition": f'attachment; filename="MedVision_Analysis_{safe_patient}.pdf"'
             }
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
         print(f"Error generating PDF: {e}")
+        import traceback; traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 

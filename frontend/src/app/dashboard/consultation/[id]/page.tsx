@@ -1052,9 +1052,28 @@ export default function ConsultationPage() {
                                             <div className="flex items-center justify-between mb-3">
                                                 <h4 className="font-bold text-slate-900 dark:text-white">Detailed Analysis</h4>
                                                 <button
-                                                    onClick={() => {
-                                                        if (consultation?.id) {
-                                                            window.open(`${API_BASE}/api/consultation/ai/analysis/${consultation.id}/pdf`, '_blank')
+                                                    onClick={async () => {
+                                                        if (!consultation?.id || !aiAnalysisResult) return
+                                                        try {
+                                                            const token = localStorage.getItem('auth_token')
+                                                            const res = await fetch(`${API_BASE}/api/consultation/ai/analysis/${consultation.id}/pdf`, {
+                                                                method: 'POST',
+                                                                headers: {
+                                                                    'Authorization': `Bearer ${token}`,
+                                                                    'Content-Type': 'application/json'
+                                                                },
+                                                                body: JSON.stringify({ analysis: aiAnalysisResult })
+                                                            })
+                                                            if (!res.ok) throw new Error('Failed')
+                                                            const blob = await res.blob()
+                                                            const url = URL.createObjectURL(blob)
+                                                            const a = document.createElement('a')
+                                                            a.href = url
+                                                            a.download = `MedVision_Analysis_${patientProfile?.basic_info?.full_name?.replace(/\s+/g, '_') || 'Report'}.pdf`
+                                                            a.click()
+                                                            URL.revokeObjectURL(url)
+                                                        } catch {
+                                                            alert('Failed to download PDF')
                                                         }
                                                     }}
                                                     className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-700"
