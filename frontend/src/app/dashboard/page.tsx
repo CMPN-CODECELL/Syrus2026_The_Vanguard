@@ -333,7 +333,12 @@ export default function DashboardOverview() {
                                                         {appointment.mode === 'online' ? '🎥' : '🏥'}
                                                         {appointment.mode === 'online' ? 'Video Call' : 'In-Person'}
                                                     </span>
-                                                    <span>⏰ {new Date(appointment.scheduled_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+                                                    <span>⏰ {(() => {
+                                                        const d = new Date(appointment.scheduled_time)
+                                                        const h = d.getHours(), m = d.getMinutes()
+                                                        if (h < 6 && m === 0) return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                                        return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                                                    })()}</span>
                                                 </div>
                                             </div>
                                         </div>

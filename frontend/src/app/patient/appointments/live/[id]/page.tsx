@@ -263,7 +263,17 @@ export default function LiveQueuePage() {
                                 </span>
                                 <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
                                     <Clock className="w-4 h-4" />
-                                    {appointment?.scheduled_time ? new Date(appointment.scheduled_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'TBD'}
+                                    {appointment?.scheduled_time
+                                        ? (() => {
+                                            const d = new Date(appointment.scheduled_time)
+                                            const h = d.getHours(), m = d.getMinutes()
+                                            // If time is midnight or 1-5 AM it's likely a queue-based placeholder — show date only
+                                            if (h < 6 && m === 0) {
+                                                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                            }
+                                            return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                                        })()
+                                        : 'TBD'}
                                 </span>
                             </div>
                         </div>

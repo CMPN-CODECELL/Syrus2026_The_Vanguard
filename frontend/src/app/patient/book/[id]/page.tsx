@@ -314,23 +314,19 @@ export default function BookAppointmentPage() {
             }
 
             // Normalize scheduled_time to full ISO format (YYYY-MM-DDTHH:MM:SS)
-            // Handle various malformed formats: "2026-01-19", "2026-01-19T1:00", "2026-01-19T01:00"
             let scheduledTime = selectedSlot.datetime
             if (scheduledTime) {
                 if (scheduledTime.indexOf('T') !== -1) {
-                    // Has 'T' separator, but might be malformed
+                    // Has 'T' separator — normalize to YYYY-MM-DDTHH:MM:SS
                     const [datePart, timePart] = scheduledTime.split('T')
                     const timeParts = timePart.split(':')
-                    const hour = (timeParts[0] || '00').padStart(2, '0')
-                    const min = (timeParts[1] || '00').padStart(2, '0')
-                    const sec = (timeParts[2] || '00').split('.')[0].padStart(2, '0') // Remove milliseconds if present
-                    scheduledTime = `${datePart}T${hour}:${min}:${sec}`
-                } else {
-                    // No 'T', use slot time
-                    const timeParts = (selectedSlot.time || '09:00').split(':')
                     const hour = (timeParts[0] || '09').padStart(2, '0')
                     const min = (timeParts[1] || '00').padStart(2, '0')
-                    scheduledTime = `${scheduledTime}T${hour}:${min}:00`
+                    const sec = (timeParts[2] || '00').split('.')[0].padStart(2, '0')
+                    scheduledTime = `${datePart}T${hour}:${min}:${sec}`
+                } else {
+                    // No 'T' — bare date, default to 09:00 AM
+                    scheduledTime = `${scheduledTime}T09:00:00`
                 }
             }
 
@@ -563,7 +559,7 @@ export default function BookAppointmentPage() {
                                                 const monthName = date.toLocaleDateString('en-US', { month: 'short' })
                                                 const isToday = i === 0
                                                 const isTomorrow = i === 1
-                                                const isSelected = selectedSlot?.datetime === dateStr
+                                                const isSelected = selectedSlot?.datetime?.startsWith(dateStr)
 
                                                 // Calculate queue position for this date
                                                 const queueForDate = availableSlots.filter(s => s.datetime === dateStr)
@@ -572,11 +568,17 @@ export default function BookAppointmentPage() {
                                                 return (
                                                     <button
                                                         key={dateStr}
-                                                        onClick={() => setSelectedSlot({
-                                                            time: String(queuePosition),
-                                                            datetime: dateStr,
-                                                            display: `${dayName}, ${monthName} ${dayNum}`
-                                                        })}
+                                                        onClick={() => {
+                                                            // Find the first real slot for this date from the API response
+                                                            const firstSlot = availableSlots.find(s => s.datetime.startsWith(dateStr))
+                                                            // Use the real slot datetime if available, otherwise default to 09:00
+                                                            const slotDatetime = firstSlot?.datetime || `${dateStr}T09:00:00`
+                                                            setSelectedSlot({
+                                                                time: String(queuePosition),
+                                                                datetime: slotDatetime,
+                                                                display: `${dayName}, ${monthName} ${dayNum}`
+                                                            })
+                                                        }}
                                                         className={`p-3 rounded-xl border-2 text-center transition-all ${isSelected
                                                             ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/40 shadow-sm'
                                                             : 'border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 hover:border-primary-300 dark:hover:border-primary-500 hover:bg-slate-50 dark:hover:bg-slate-600'

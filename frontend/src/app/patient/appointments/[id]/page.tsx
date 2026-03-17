@@ -236,7 +236,13 @@ export default function AppointmentDetailPage() {
     }
 
     const formatTime = (dateStr: string) => {
-        return new Date(dateStr).toLocaleTimeString('en-US', {
+        const d = new Date(dateStr)
+        const h = d.getHours(), m = d.getMinutes()
+        // If time is midnight or early AM (< 6:00) with no minutes, it's a queue-based placeholder — show date instead
+        if (h < 6 && m === 0) {
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        }
+        return d.toLocaleTimeString('en-US', {
             hour: 'numeric',
             minute: '2-digit',
             hour12: true

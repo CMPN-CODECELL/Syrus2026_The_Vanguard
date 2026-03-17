@@ -171,6 +171,9 @@ export default function PatientMessagesPage() {
         const date = new Date(dateStr)
         const today = new Date()
         if (date.toDateString() === today.toDateString()) return 'Today'
+        const yesterday = new Date(today)
+        yesterday.setDate(today.getDate() - 1)
+        if (date.toDateString() === yesterday.toDateString()) return 'Yesterday'
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     }
 

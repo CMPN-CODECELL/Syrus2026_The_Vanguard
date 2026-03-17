@@ -188,6 +188,17 @@ export default function DoctorMessagesPage() {
         return new Date(dateStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
     }
 
+    // For conversation list: show date only (not the appointment time which may be queue-based)
+    const formatConvDate = (dateStr: string) => {
+        const date = new Date(dateStr)
+        const today = new Date()
+        if (date.toDateString() === today.toDateString()) return 'Today'
+        const yesterday = new Date(today)
+        yesterday.setDate(today.getDate() - 1)
+        if (date.toDateString() === yesterday.toDateString()) return 'Yesterday'
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    }
+
     const filteredConversations = conversations.filter(c =>
         c.patientName.toLowerCase().includes(searchQuery.toLowerCase())
     )
@@ -239,7 +250,7 @@ export default function DoctorMessagesPage() {
                                     <div className="flex justify-between items-start">
                                         <h3 className="font-semibold text-slate-900 dark:text-white truncate">{conv.patientName}</h3>
                                         <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap ml-2">
-                                            {formatTime(conv.lastMessageTime)}
+                                            {formatConvDate(conv.lastMessageTime)}
                                         </span>
                                     </div>
                                     <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{conv.lastMessage}</p>
