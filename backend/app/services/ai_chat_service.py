@@ -518,7 +518,7 @@ Please provide a comprehensive analysis in the following markdown format:
 **Important**: 
 - If any dates or timelines are uncertain, explicitly state this
 - If information seems inconsistent, flag it for verification
-- Rate your overall confidence in the analysis (1-100%)
+- Do NOT include a confidence percentage anywhere in the markdown text — confidence is computed separately
 """
     
     return prompt
@@ -532,7 +532,22 @@ def _parse_analysis_response(
     extracted_docs: List[Dict]
 ) -> Dict[str, Any]:
     """Parse Gemini response into structured analysis data."""
-    
+
+    # Strip any AI-generated confidence lines from the markdown
+    # (e.g. "**Overall Confidence in Analysis:** 98%" or "Confidence: 95%")
+    import re as _re
+    clean_response = _re.sub(
+        r'\*{0,2}[Oo]verall [Cc]onfidence[^:\n]*:\*{0,2}\s*\d{1,3}%[^\n]*\n?',
+        '',
+        raw_response
+    )
+    clean_response = _re.sub(
+        r'\*{0,2}[Cc]onfidence(?: [Ii]n [Aa]nalysis)?:\*{0,2}\s*\d{1,3}%[^\n]*\n?',
+        '',
+        clean_response
+    )
+    raw_response = clean_response.strip()
+
     # Extract executive summary
     exec_summary = ""
     if "### Executive Summary" in raw_response:
