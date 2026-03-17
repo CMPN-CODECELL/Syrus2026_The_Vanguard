@@ -70,7 +70,7 @@ export default function DoctorProfilePage() {
         loadProfile()
     }, [])
 
-    const loadProfile = () => {
+    const loadProfile = async () => {
         setLoading(true)
         try {
             // Load from localStorage
@@ -90,22 +90,34 @@ export default function DoctorProfilePage() {
                     verification_status: user.verification_status || 'approved'
                 })
                 setHospitalAddress(user.hospital_address || '')
+
+                // Fetch settings from API (source of truth)
+                try {
+                    const settings = await api.getDoctorSettings(user.id || user.email)
+                    if (settings) {
+                        setMeetLink(settings.custom_meet_link || '')
+                        setWorkingHoursStart(settings.working_hours_start || '09:00')
+                        setWorkingHoursEnd(settings.working_hours_end || '18:00')
+                        setOnlineFee(settings.online_consultation_fee?.toString() || '500')
+                        setOfflineFee(settings.offline_consultation_fee?.toString() || '700')
+                        setAcceptingOnline(settings.accepts_online !== false)
+                        setAcceptingOffline(settings.accepts_offline !== false)
+                        return
+                    }
+                } catch (e) {
+                    console.warn('Could not fetch settings from API, falling back to localStorage')
+                }
             }
 
-            // Load settings
-            const savedMeetLink = localStorage.getItem('doctor_meet_link') || ''
-            const savedWorkingStart = localStorage.getItem('doctor_working_hours_start') || '09:00'
-            const savedWorkingEnd = localStorage.getItem('doctor_working_hours_end') || '18:00'
-            const savedOnlineFee = localStorage.getItem('doctor_online_fee') || '500'
-            const savedOfflineFee = localStorage.getItem('doctor_offline_fee') || '700'
+            // Fallback: load settings from localStorage
             const savedAcceptingOnline = localStorage.getItem('doctor_accepting_online') !== 'false'
             const savedAcceptingOffline = localStorage.getItem('doctor_accepting_offline') !== 'false'
 
-            setMeetLink(savedMeetLink)
-            setWorkingHoursStart(savedWorkingStart)
-            setWorkingHoursEnd(savedWorkingEnd)
-            setOnlineFee(savedOnlineFee)
-            setOfflineFee(savedOfflineFee)
+            setMeetLink(localStorage.getItem('doctor_meet_link') || '')
+            setWorkingHoursStart(localStorage.getItem('doctor_working_hours_start') || '09:00')
+            setWorkingHoursEnd(localStorage.getItem('doctor_working_hours_end') || '18:00')
+            setOnlineFee(localStorage.getItem('doctor_online_fee') || '500')
+            setOfflineFee(localStorage.getItem('doctor_offline_fee') || '700')
             setAcceptingOnline(savedAcceptingOnline)
             setAcceptingOffline(savedAcceptingOffline)
         } finally {

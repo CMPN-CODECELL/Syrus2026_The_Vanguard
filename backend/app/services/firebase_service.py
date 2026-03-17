@@ -722,18 +722,18 @@ class FirebaseService:
             doc_ref.set(initial_data)
     
     def search_doctors(self, filters: dict) -> List[dict]:
-        """Search for doctors with filters."""
+        """Search for doctors with filters, enriched with settings (fees, hours)."""
         if not self.is_connected:
             return []
-        
+
         query = self._db.collection("doctors")
-        
+
         if filters.get("specialization"):
             query = query.where("specialization", "==", filters["specialization"])
-        
+
         docs = query.limit(50).stream()
         results = []
-        
+
         for doc in docs:
             data = doc.to_dict()
             # Apply text search filter if query provided
@@ -743,8 +743,23 @@ class FirebaseService:
                 spec = data.get("specialization", "").lower()
                 if search_text not in name and search_text not in spec:
                     continue
+
+            # Enrich with doctor settings (fees, working hours, accepting status)
+            doctor_id = data.get("id") or doc.id
+            try:
+                settings = self.get_doctor_settings(doctor_id)
+                if settings:
+                    data["online_fee"] = settings.get("online_consultation_fee")
+                    data["offline_fee"] = settings.get("offline_consultation_fee")
+                    data["working_hours_start"] = settings.get("working_hours_start", "09:00")
+                    data["working_hours_end"] = settings.get("working_hours_end", "18:00")
+                    data["accepts_online"] = settings.get("accepts_online", True)
+                    data["accepts_offline"] = settings.get("accepts_offline", True)
+            except Exception as e:
+                print(f"Warning: could not enrich doctor {doctor_id} with settings: {e}")
+
             results.append(data)
-        
+
         return results
 
     def get_patient_profile_by_appointment(self, appointment_id: str) -> Optional[dict]:

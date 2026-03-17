@@ -68,6 +68,10 @@ interface Doctor {
     consultation_fee?: number
     online_fee?: number
     offline_fee?: number
+    online_consultation_fee?: number
+    offline_consultation_fee?: number
+    working_hours_start?: string
+    working_hours_end?: string
     nextAvailable?: string
     image?: string
     verification_status?: string
@@ -348,15 +352,19 @@ export default function FindDoctorsPage() {
                                         <p className="text-sm text-slate-500 dark:text-slate-400">Available</p>
                                         <p className="font-semibold text-slate-800 dark:text-white flex items-center gap-1">
                                             <Clock className="w-4 h-4 text-green-500" />
-                                            {doctor.consultation_start_time && doctor.consultation_end_time
-                                                ? `${doctor.consultation_start_time} - ${doctor.consultation_end_time}`
-                                                : 'Contact for availability'}
+                                            {doctor.working_hours_start && doctor.working_hours_end
+                                                ? `${doctor.working_hours_start} - ${doctor.working_hours_end}`
+                                                : doctor.consultation_start_time && doctor.consultation_end_time
+                                                    ? `${doctor.consultation_start_time} - ${doctor.consultation_end_time}`
+                                                    : '9:00 AM - 6:00 PM'}
                                         </p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-sm text-slate-500 dark:text-slate-400">Consultation Fee</p>
                                         <p className="font-bold text-xl text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                                            ₹{doctor.online_fee || doctor.offline_fee || doctor.consultation_fee || 'Contact'}
+                                            {(doctor.online_fee || doctor.offline_fee || doctor.online_consultation_fee || doctor.offline_consultation_fee || doctor.consultation_fee)
+                                                ? `₹${doctor.online_fee || doctor.offline_fee || doctor.online_consultation_fee || doctor.offline_consultation_fee || doctor.consultation_fee}`
+                                                : '₹500'}
                                         </p>
                                     </div>
                                 </div>
