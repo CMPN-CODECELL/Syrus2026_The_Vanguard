@@ -1294,7 +1294,7 @@ async def download_analysis_pdf(
             summary_lines = _wrap_text(summary, int(CW / 5.2))
             box_h = len(summary_lines) * 13 + 16
             page, y = check_space(page, y, box_h, page_num)
-            page.draw_rect(fitz.Rect(ML, y, W - MR, y + box_h), color=(0.94, 0.91, 1.0), fill=(0.94, 0.91, 1.0), radius=4)
+            page.draw_rect(fitz.Rect(ML, y, W - MR, y + box_h), color=(0.94, 0.91, 1.0), fill=(0.94, 0.91, 1.0))
             ty = y + 10
             for sl in summary_lines:
                 page.insert_text((ML + 8, ty + 9), sl, fontsize=9.5, fontname="helv", color=DARK)
