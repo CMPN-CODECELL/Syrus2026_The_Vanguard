@@ -314,22 +314,15 @@ export default function BookAppointmentPage() {
                 }
             }
 
-            // Normalize scheduled_time to full ISO format (YYYY-MM-DDTHH:MM:SS)
-            let scheduledTime = selectedSlot.datetime
-            if (scheduledTime) {
-                if (scheduledTime.indexOf('T') !== -1) {
-                    // Has 'T' separator — normalize to YYYY-MM-DDTHH:MM:SS
-                    const [datePart, timePart] = scheduledTime.split('T')
-                    const timeParts = timePart.split(':')
-                    const hour = (timeParts[0] || '09').padStart(2, '0')
-                    const min = (timeParts[1] || '00').padStart(2, '0')
-                    const sec = (timeParts[2] || '00').split('.')[0].padStart(2, '0')
-                    scheduledTime = `${datePart}T${hour}:${min}:${sec}`
-                } else {
-                    // No 'T' — bare date, default to 09:00 AM
-                    scheduledTime = `${scheduledTime}T09:00:00`
-                }
-            }
+            // For queue-based appointments, use the actual booking timestamp (now)
+            // so the stored time reflects when the patient actually booked, not a slot placeholder.
+            // Keep the selected date but use current local time.
+            const now = new Date()
+            const datePart = selectedSlot.datetime.split('T')[0]
+            const hh = String(now.getHours()).padStart(2, '0')
+            const mm = String(now.getMinutes()).padStart(2, '0')
+            const ss = String(now.getSeconds()).padStart(2, '0')
+            const scheduledTime = `${datePart}T${hh}:${mm}:${ss}`
 
             const appointmentData = {
                 patient_id: patientId,
@@ -568,20 +561,24 @@ export default function BookAppointmentPage() {
                                                     <button
                                                         key={dateStr}
                                                         onClick={async () => {
-                                                            // Fetch real queue count for this date
+                                                            // Fetch real queue count AND first slot datetime for this date
                                                             let nextToken = tokenByDate[dateStr]
-                                                            if (nextToken === undefined) {
+                                                            let slotDatetime = availableSlots.find(s => s.datetime.startsWith(dateStr))?.datetime
+                                                            if (nextToken === undefined || !slotDatetime) {
                                                                 try {
                                                                     const slotRes = await api.getAvailableSlots(doctorId, dateStr)
                                                                     nextToken = slotRes.next_token ?? (slotRes.queue_count ?? 0) + 1
                                                                     setTokenByDate(prev => ({ ...prev, [dateStr]: nextToken }))
+                                                                    // Use first available slot datetime from API, fallback to working hours start
+                                                                    if (slotRes.slots?.length > 0) {
+                                                                        slotDatetime = slotRes.slots[0].datetime
+                                                                    }
                                                                 } catch {
-                                                                    nextToken = 1
+                                                                    nextToken = nextToken ?? 1
                                                                 }
                                                             }
-                                                            // Find the first real slot for this date from the API response
-                                                            const firstSlot = availableSlots.find(s => s.datetime.startsWith(dateStr))
-                                                            const slotDatetime = firstSlot?.datetime || `${dateStr}T09:00:00`
+                                                            // Final fallback only if API gave no slots at all
+                                                            if (!slotDatetime) slotDatetime = `${dateStr}T09:00:00`
                                                             setSelectedSlot({
                                                                 time: String(nextToken),
                                                                 datetime: slotDatetime,
