@@ -562,16 +562,57 @@ def _parse_analysis_response(
             if line.startswith("-") or line.startswith("*"):
                 uncertainties.append(line[1:].strip())
     
-    # Extract confidence score
-    confidence = 70.0  # Default
-    if "confidence" in raw_response.lower():
-        import re
-        match = re.search(r'(\d{1,3})%', raw_response)
-        if match:
-            try:
-                confidence = float(match.group(1))
-            except ValueError:
-                pass
+    # ── Confidence score: multi-factor, strict calculation ────────────────────
+    # Start from 0 and add points only for concrete evidence.
+    # This prevents inflated scores when data is sparse or absurd.
+    confidence = 0.0
+
+    # Factor 1: Document evidence (up to 35 pts)
+    # Each real document adds weight; diminishing returns after 3
+    doc_pts = min(35.0, len(extracted_docs) * 12.0)
+    confidence += doc_pts
+
+    # Factor 2: Key findings richness (up to 25 pts)
+    # More specific findings = more reliable analysis
+    findings_pts = min(25.0, len(key_findings) * 4.0)
+    confidence += findings_pts
+
+    # Factor 3: Uncertainty penalty (up to -20 pts)
+    # Each uncertainty the AI flags reduces confidence
+    uncertainty_penalty = min(20.0, len(uncertainties) * 5.0)
+    confidence -= uncertainty_penalty
+
+    # Factor 4: AI self-reported confidence in the response text (up to 20 pts)
+    # Only trust it if it's in a structured "confidence: X%" line, not random %
+    import re
+    ai_self_score = None
+    # Look for explicit confidence rating near end of response
+    conf_match = re.search(
+        r'(?:overall\s+confidence|confidence\s+(?:level|rating|score))[^\d]*(\d{1,3})\s*%',
+        raw_response, re.IGNORECASE
+    )
+    if conf_match:
+        try:
+            ai_self_score = float(conf_match.group(1))
+        except ValueError:
+            pass
+    if ai_self_score is not None:
+        # Map AI self-score to max 20 pts, but penalise if it's suspiciously high
+        # with few documents (AI tends to be overconfident)
+        raw_ai_pts = (ai_self_score / 100.0) * 20.0
+        # Penalise if AI claims >80% but we have <2 docs
+        if ai_self_score > 80 and len(extracted_docs) < 2:
+            raw_ai_pts *= 0.4
+        confidence += raw_ai_pts
+
+    # Factor 5: Patient profile completeness (up to 10 pts)
+    # Checked via presence of key sections in the prompt context
+    profile_keywords = ["chief complaint", "medical history", "allergies", "age", "gender"]
+    profile_pts = sum(2.0 for kw in profile_keywords if kw in raw_response.lower())
+    confidence += min(10.0, profile_pts)
+
+    # Hard floor/ceiling
+    confidence = max(5.0, min(95.0, round(confidence, 1)))
     
     return {
         "id": f"analysis_{uuid.uuid4().hex[:12]}",
