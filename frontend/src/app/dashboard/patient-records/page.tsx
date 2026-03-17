@@ -70,7 +70,8 @@ export default function PatientRecordsPage() {
     const formatTime = (dateStr: string) => {
         if (!dateStr) return ''
         const d = new Date(dateStr)
-        return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        if (isNaN(d.getTime())) return ''
+        return d.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + ' IST'
     }
 
     return (
