@@ -8,9 +8,20 @@ import logging
 import re
 from typing import Optional
 
-import requests
+import google.generativeai as genai
+
+from app.config import settings
 
 logger = logging.getLogger(__name__)
+
+_model = None
+
+def _get_model():
+    global _model
+    if _model is None:
+        genai.configure(api_key=settings.gemini_api_key)
+        _model = genai.GenerativeModel("gemini-2.5-flash")
+    return _model
 
 # ── Reference ranges (adult) ──────────────────────────────────────────────────
 REFERENCE_RANGES = {
@@ -148,20 +159,10 @@ Report text:
 {report_text[:3000]}
 """
 
-    url = (
-        "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemini-1.5-flash:generateContent?key={api_key}"
-    )
-    payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0, "maxOutputTokens": 512},
-    }
-
     try:
-        response = requests.post(url, json=payload, timeout=30)
-        response.raise_for_status()
-
-        raw_text = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        model = _get_model()
+        response = model.generate_content(prompt)
+        raw_text = response.text.strip()
         raw_text = re.sub(r"```(?:json)?", "", raw_text).strip().strip("`").strip()
 
         result = json.loads(raw_text)
