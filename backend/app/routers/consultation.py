@@ -1113,6 +1113,40 @@ async def download_analysis_pdf(consultation_id: str):
     try:
         analysis = db.get_ai_analysis_by_consultation(consultation_id)
         if not analysis:
+            # Analysis not in DB yet — regenerate on the fly
+            consultation = db.get_consultation_by_id(consultation_id)
+            if not consultation:
+                raise HTTPException(status_code=404, detail="Consultation not found")
+            appointment = db.get_appointment_by_id(consultation.get("appointment_id"))
+            if not appointment:
+                raise HTTPException(status_code=404, detail="Appointment not found")
+            patient_profile = db.get_patient_profile_by_appointment(appointment.get("id")) or {}
+            basic_info = patient_profile.get("basic_info", {})
+            patient_context = {
+                "patient_id": appointment.get("patient_id"),
+                "doctor_id": appointment.get("doctor_id"),
+                "name": basic_info.get("full_name") or appointment.get("patient_name") or "Unknown",
+                "age": basic_info.get("age") or appointment.get("patient_age"),
+                "gender": basic_info.get("gender") or appointment.get("patient_gender"),
+                "blood_group": basic_info.get("blood_group"),
+                "allergies": basic_info.get("allergies", []),
+                "current_medications": basic_info.get("current_medications", []),
+                "chief_complaint": patient_profile.get("chief_complaint", {}),
+                "medical_history": patient_profile.get("medical_history", []),
+            }
+            uploaded_documents = patient_profile.get("uploaded_documents", [])
+            document_ids = [
+                (doc.get("id") or doc.get("file_id") or doc.get("document_id"))
+                for doc in uploaded_documents if isinstance(doc, dict)
+            ] + [doc for doc in uploaded_documents if isinstance(doc, str)]
+            document_ids = [d for d in document_ids if d]
+            result = generate_comprehensive_analysis(
+                consultation_id=consultation_id,
+                patient_profile=patient_context,
+                document_ids=document_ids
+            )
+            analysis = result.get("analysis") or {}
+        if not analysis:
             raise HTTPException(status_code=404, detail="No analysis found")
         
         # Get patient info for header
