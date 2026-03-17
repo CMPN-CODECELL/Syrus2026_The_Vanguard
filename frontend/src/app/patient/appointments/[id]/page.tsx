@@ -28,6 +28,7 @@ import {
     CalendarCheck,
     Loader2
 } from 'lucide-react'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 interface Medication {
     name: string
@@ -402,17 +403,22 @@ export default function AppointmentDetailPage() {
 
                             {/* Diagnosis */}
                             {doctorNotes.provisional_diagnosis && (
-                                <div className="mb-4">
-                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Diagnosis</p>
-                                    <p className="text-slate-900 dark:text-white">{doctorNotes.provisional_diagnosis}</p>
+                                <div className="mb-5">
+                                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Diagnosis</p>
+                                    <div className="flex items-start gap-3 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl px-4 py-3">
+                                        <Stethoscope className="w-4 h-4 text-teal-600 dark:text-teal-400 mt-0.5 shrink-0" />
+                                        <p className="text-teal-900 dark:text-teal-100 font-medium leading-relaxed">{doctorNotes.provisional_diagnosis}</p>
+                                    </div>
                                 </div>
                             )}
 
                             {/* Observations */}
                             {doctorNotes.observations && (
                                 <div>
-                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Observations</p>
-                                    <p className="text-slate-700 dark:text-slate-300">{doctorNotes.observations}</p>
+                                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Observations</p>
+                                    <div className="bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 prose prose-sm dark:prose-invert max-w-none">
+                                        <MarkdownRenderer content={doctorNotes.observations} />
+                                    </div>
                                 </div>
                             )}
                         </div>
