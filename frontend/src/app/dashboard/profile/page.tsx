@@ -93,7 +93,7 @@ export default function DoctorProfilePage() {
 
                 // Fetch settings from API (source of truth)
                 try {
-                    const settings = await api.getDoctorSettings(user.id || user.email)
+                    const settings = await api.getDoctorSettings()
                     if (settings) {
                         setMeetLink(settings.custom_meet_link || '')
                         setWorkingHoursStart(settings.working_hours_start || '09:00')
