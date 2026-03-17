@@ -1154,17 +1154,25 @@ async def download_analysis_pdf(
 
         def new_page():
             p = doc.new_page(width=W, height=H)
-            # Diagonal watermark — doctor name repeated
+            # Diagonal watermark using TextWriter with rotation matrix
             wm_text = f"Dr. {doctor_name}  •  MedVision AI"
-            for yi in range(0, H + 100, 130):
-                p.insert_text(
-                    (-30 + yi * 0.3, yi),
-                    wm_text,
-                    fontsize=11,
-                    fontname="helv",
-                    color=WMARK,
-                    rotate=45,
-                )
+            try:
+                tw = fitz.TextWriter(p.rect)
+                font = fitz.Font("helv")
+                # Place watermark text at multiple positions across the page
+                import math
+                angle = math.radians(45)
+                cos_a, sin_a = math.cos(angle), math.sin(angle)
+                morph_matrix = fitz.Matrix(cos_a, sin_a, -sin_a, cos_a, 0, 0)
+                for row in range(-1, 5):
+                    for col in range(-1, 3):
+                        origin = fitz.Point(col * 220 - 30, row * 200 + 120)
+                        tw.append(origin, wm_text, font=font, fontsize=9)
+                tw.write_text(p, color=WMARK, morph=(fitz.Point(W/2, H/2), morph_matrix))
+            except Exception:
+                # Fallback: horizontal watermark rows
+                for row_y in range(80, H - 40, 120):
+                    p.insert_text((ML, row_y), wm_text, fontsize=8, fontname="helv", color=WMARK)
             return p
 
         def add_page_footer(p, page_num):
