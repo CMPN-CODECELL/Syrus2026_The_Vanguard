@@ -154,12 +154,40 @@ export default function BookAppointmentPage() {
     const [newMedication, setNewMedication] = useState('')
 
     useEffect(() => {
-        // Load user data
+        // Load user data + prefill basic info from profile
         const userData = localStorage.getItem('user')
         if (userData) {
             try {
                 const user = JSON.parse(userData)
+                const patientId = user.email || user.id
+                // Seed name immediately from localStorage
                 setBasicInfo(prev => ({ ...prev, fullName: user.name || '' }))
+                // Fetch full profile to prefill all fields
+                if (patientId) {
+                    api.getPatient(patientId).then(data => {
+                        if (!data) return
+                        // Calculate age from date_of_birth
+                        let age = ''
+                        const dob = data.date_of_birth || data.dob
+                        if (dob) {
+                            const birth = new Date(dob)
+                            const today = new Date()
+                            let years = today.getFullYear() - birth.getFullYear()
+                            const m = today.getMonth() - birth.getMonth()
+                            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) years--
+                            if (years > 0) age = String(years)
+                        }
+                        setBasicInfo(prev => ({
+                            ...prev,
+                            fullName: data.name || data.full_name || prev.fullName,
+                            age,
+                            gender: data.gender || prev.gender,
+                            bloodGroup: data.blood_group || prev.bloodGroup,
+                            allergies: data.allergies?.length ? data.allergies : prev.allergies,
+                            currentMedications: data.medications?.length ? data.medications : prev.currentMedications,
+                        }))
+                    }).catch(() => { /* non-fatal */ })
+                }
             } catch (e) { }
         }
 
