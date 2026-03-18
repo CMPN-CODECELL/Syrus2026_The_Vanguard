@@ -181,7 +181,7 @@ export default function BookAppointmentPage() {
                             ...prev,
                             fullName: data.name || data.full_name || prev.fullName,
                             age,
-                            gender: data.gender || prev.gender,
+                            gender: data.gender ? data.gender.toLowerCase() : prev.gender,
                             bloodGroup: data.blood_group || prev.bloodGroup,
                             allergies: data.allergies?.length ? data.allergies : prev.allergies,
                             currentMedications: data.medications?.length ? data.medications : prev.currentMedications,
