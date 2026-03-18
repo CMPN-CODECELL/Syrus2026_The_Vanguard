@@ -966,57 +966,6 @@ export default function ConsultationPage() {
 
                             {aiAnalysisResult ? (
                                 <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                                    {/* Confidence Score */}
-                                    {(() => {
-                                        const raw = aiAnalysisResult.confidence_score ?? 0
-                                        const score = Math.min(100, Math.max(0, Math.round(raw)))
-                                        const color = score >= 75 ? 'text-emerald-600' : score >= 50 ? 'text-amber-500' : 'text-red-500'
-                                        const barColor = score >= 75 ? 'from-emerald-400 to-emerald-600' : score >= 50 ? 'from-amber-400 to-amber-500' : 'from-red-400 to-red-500'
-                                        const label = score >= 75 ? 'High Confidence' : score >= 50 ? 'Moderate — Verify Key Points' : 'Low — Manual Review Required'
-                                        const labelBg = score >= 75 ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300' : score >= 50 ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300' : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
-                                        const docsCount = aiAnalysisResult.extracted_documents?.length ?? 0
-                                        const uncertaintyCount = aiAnalysisResult.uncertainties?.length ?? 0
-                                        const findingsCount = aiAnalysisResult.key_findings?.length ?? 0
-                                        return (
-                                            <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg space-y-3">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-semibold text-slate-700 dark:text-slate-300 text-sm">Analysis Confidence</span>
-                                                    <span className={`text-2xl font-bold tabular-nums ${color}`}>{score}%</span>
-                                                </div>
-                                                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                                                    <div
-                                                        className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-700`}
-                                                        style={{ width: `${score}%` }}
-                                                    />
-                                                </div>
-                                                <div className={`text-xs font-medium px-2 py-1 rounded border inline-flex items-center gap-1 ${labelBg}`}>
-                                                    {score >= 75 ? <CheckCircle className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
-                                                    {label}
-                                                </div>
-                                                <div className="grid grid-cols-3 gap-2 pt-1">
-                                                    <div className="text-center p-2 bg-white dark:bg-slate-700 rounded-md">
-                                                        <p className="text-xs text-slate-500 dark:text-slate-400">Documents</p>
-                                                        <p className="font-bold text-slate-800 dark:text-white text-sm">{docsCount}</p>
-                                                    </div>
-                                                    <div className="text-center p-2 bg-white dark:bg-slate-700 rounded-md">
-                                                        <p className="text-xs text-slate-500 dark:text-slate-400">Findings</p>
-                                                        <p className="font-bold text-slate-800 dark:text-white text-sm">{findingsCount}</p>
-                                                    </div>
-                                                    <div className="text-center p-2 bg-white dark:bg-slate-700 rounded-md">
-                                                        <p className="text-xs text-amber-600 dark:text-amber-400">Uncertainties</p>
-                                                        <p className={`font-bold text-sm ${uncertaintyCount > 0 ? 'text-amber-600' : 'text-slate-800 dark:text-white'}`}>{uncertaintyCount}</p>
-                                                    </div>
-                                                </div>
-                                                {score < 75 && (
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400 italic">
-                                                        {score < 50
-                                                            ? 'Insufficient data for reliable analysis. Upload patient documents and ensure complete profile.'
-                                                            : 'Some data gaps detected. Review uncertainties before clinical decisions.'}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        )
-                                    })()}
 
                                     {/* Executive Summary */}
                                     {aiAnalysisResult.executive_summary && (
