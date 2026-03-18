@@ -62,6 +62,12 @@ export const api = {
 
     getPatient: (id: string) => fetchAPI<any>(`/api/patients/${id}`),
 
+    updatePatient: (id: string, updates: Record<string, any>) =>
+        fetchAPI<{ success: boolean }>(`/api/patients/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(updates),
+        }),
+
     getPatientTimeline: (id: string) =>
         fetchAPI<{ patient: any; timeline: any[]; total_events: number; token_estimate: number }>(
             `/api/patients/${id}/timeline`

@@ -112,3 +112,15 @@ async def get_patient_full_context(patient_id: str):
         "token_count": token_count,
         "message": f"Loaded {token_count:,} tokens into Gemini 3 context"
     }
+
+
+@router.put("/{patient_id}")
+async def update_patient(patient_id: str, updates: dict):
+    """Update patient profile fields."""
+    try:
+        # Remove None values so we don't overwrite existing data with nulls
+        clean = {k: v for k, v in updates.items() if v is not None}
+        firebase.update_patient(patient_id, clean)
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

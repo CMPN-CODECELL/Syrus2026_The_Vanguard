@@ -186,17 +186,17 @@ export default function PatientProfilePage() {
         }
     }
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setProfile(editedProfile)
         setIsEditing(false)
 
-        // Persist to localStorage so profile completion updates
         try {
             const userData = localStorage.getItem('user')
             if (userData) {
                 const user = JSON.parse(userData)
-                const updatedUser = {
-                    ...user,
+                const patientId = user.email || user.id
+
+                const payload = {
                     name: editedProfile.name,
                     phone: editedProfile.phone,
                     date_of_birth: editedProfile.dateOfBirth,
@@ -205,15 +205,22 @@ export default function PatientProfilePage() {
                     address: editedProfile.address,
                     emergency_contact: editedProfile.emergencyContact,
                     allergies: editedProfile.allergies,
+                    medications: editedProfile.medications,
                     conditions: editedProfile.conditions
                 }
-                localStorage.setItem('user', JSON.stringify(updatedUser))
 
-                // Clear the modal shown flag so it recalculates on next visit
+                // Persist to backend
+                if (patientId) {
+                    await api.updatePatient(patientId, payload)
+                }
+
+                // Also update localStorage so other pages see it immediately
+                const updatedUser = { ...user, ...payload }
+                localStorage.setItem('user', JSON.stringify(updatedUser))
                 sessionStorage.removeItem('profileModalShown')
             }
         } catch (e) {
-            console.error('Failed to save profile to localStorage:', e)
+            console.error('Failed to save profile:', e)
         }
     }
 
